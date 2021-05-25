@@ -8,7 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon",
+    "dev:fixtures": "./development-fixtures.sh"
   },
   "repository": {
     "type": "git",
@@ -31,5 +33,17 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "./index.js",
+      "./utils",
+      "./develpment-fixtures.sh"
+    ],
+    "exec": "npm run dev:fixtures && npm start"
   }
 }

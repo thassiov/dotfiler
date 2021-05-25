@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  dev:
+    image: node:16
+    command: "npm run dev"
+    volumes:
+      - .:/src
+      - /tmp:/root
+    working_dir: /src

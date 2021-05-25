@@ -20,9 +20,25 @@ import {
 const DEFAULT_CONFIG_FILE_NAME = '.dotfiler.json';
 
 async function getGlobalInformation() {
-  logger.debug(`[getGlobalInformation]`);
-  const gConfigPath = resolve(process.env.HOME, DEFAULT_CONFIG_FILE_NAME);
-  return strToJson(await fileLoader(gConfigPath));
+  logger.debug(`[getGlobalInformation] Trying to read main config file`);
+  try {
+    const gConfigPath = resolve(process.env.HOME, DEFAULT_CONFIG_FILE_NAME);
+    return strToJson(await fileLoader(gConfigPath));
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      logger.debug(`[getGlobalInformation] Global information not found. Defaulting to $HOME/dotfiles`);
+      return {
+        dotfiles: [
+          {
+            name: 'main',
+            location: `${process.env.HOME}/dotfiles`
+          }
+        ],
+      };
+    }
+    logger.error(err);
+    throw err;
+  }
 }
 
 async function getProjectInformation(configPath) {
@@ -70,8 +86,6 @@ async function handleConfig(config) {
 
   result.status = config.copy ? await handleConfigCopy(config) : await handleConfigSymlink(config);
 
-  // @TODO check if "copy == true" is there
-  // @TODO check if the config is copied
   // @TODO if copied, check fo checksum of something that can state a diff between the two
   return result;
 }
@@ -79,7 +93,6 @@ async function handleConfig(config) {
 async function handleProject(project) {
   logger.debug(`[handleProject] ${limitStringSize(ensureString(project.name || project.location), 50)}`);
 
-  // @TODO do somethign regarding this directory constant
   // @TODO maybe handle the case when the config path is a syn link as well, idk
   const [isFile, isDirectory] = await Promise.all([
     isPathOfType(project.location, 'file'),
@@ -90,7 +103,7 @@ async function handleProject(project) {
 
   const projectInfo = await getProjectInformation(configPath);
 
-  // figure out the config file/dir full path as it will be needed later
+  // this figures out the config file/dir full path as it will be needed later
   const configFilePrefix = isDirectory ? project.location : dirname(project.location);
 
   const configsToHandle = projectInfo.configs
@@ -103,7 +116,7 @@ async function handleProject(project) {
   return results;
 }
 
-//////////////////////// the start
+//// the start
 
 const gConfigContent = await getGlobalInformation();
 
@@ -111,4 +124,4 @@ const projectsToHandle = gConfigContent.dotfiles.map(handleProject);
 
 const results = await Promise.all(projectsToHandle);
 
-logger.info(ensureString(results.flat()));
+logger.info(JSON.stringify(results.flat(), null, 2));
