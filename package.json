@@ -4,6 +4,9 @@
   "description": "Keeps track",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "dotfiler": "./index.js"
+  },
   "directories": {
     "test": "tests"
   },
