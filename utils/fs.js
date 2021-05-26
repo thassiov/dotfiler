@@ -135,7 +135,7 @@ async function copyConfig(config) {
       return await copyDirectory(config);
     }
 
-    // @NOTE aaaaaaaaaaaaaa
+    // @NOTE aaaaaaaaaaaaa
     return false;
   } catch (err) {
     logger.error(`[copyConfig] Could not create copy for ${config.src}: ${err.message}`)
@@ -152,6 +152,7 @@ function resolveConfigDestPaths(config) {
     return config;
   }
 
+  // @NOTE this '~' thing is important. Should be documented.
   return {
     ...config,
     dest: dest[0] === '~' ? join(process.env.HOME, dest.slice(1)) : dest,

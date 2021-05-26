@@ -57,6 +57,26 @@ giberishGenerator ./nested.conf.copy.2
 
 cd ..
 
+echo "Creating $dotfiles_dir/test.conf.link.exist file"
+touch test.conf.link.exist
+giberishGenerator ./test.conf.link.exist
+echo "Linking $dotfiles_dir/test.conf.link.exist to $dest_dir"
+ln -s ./test.conf.link.exist $dest_dir
+
+
+echo "Creating $dotfiles_dir/test.dir.link.exist directory"
+mkdir test.dir.link.exist
+cd test.dir.link.exist
+echo "Creating $dotfiles_dir/test.dir.link.exist/nested.conf.link.1 file"
+touch nested.conf.link.1
+giberishGenerator ./nested.conf.link.1
+echo "Creating $dotfiles_dir/test.dir.link.exist/nested.conf.link.2 file"
+touch nested.conf.link.2
+giberishGenerator ./nested.conf.link.2
+cd ..
+echo "Linking $dotfiles_dir/test.dir.link.exist to $dest_dir"
+ln -s ./test.dir.link.exist $dest_dir
+
 echo "Creating $dotfiles_dir/test.conf.copy.exist file"
 touch test.conf.copy.exist
 giberishGenerator ./test.conf.copy.exist
@@ -105,9 +125,17 @@ cat >.dotfiler.json <<EOF
       "copy": true
     },
     {
+      "src":"test.conf.link.exist",
+      "dest":"${dest_dir}/test.conf.link.exist"
+    },
+    {
       "src":"test.dir.copy.exist",
       "dest":"${dest_dir}/test.dir.copy.exist",
       "copy": true
+    },
+    {
+      "src":"test.dir.link.exist",
+      "dest":"${dest_dir}/test.dir.link.exist"
     },
     {
       "src":"test.conf.link",
