@@ -16,6 +16,7 @@ import {
   createConfigSymLink,
   copyConfig,
 } from './utils/fs.js';
+import { presentProjectResults } from './utils/presentation.js';
 
 const DEFAULT_CONFIG_FILE_NAME = '.dotfiler.json';
 
@@ -36,7 +37,6 @@ async function getGlobalInformation() {
         ],
       };
     }
-    logger.error(`${err.message}`);
     throw err;
   }
 }
@@ -50,14 +50,19 @@ async function handleConfigSymlink(config) {
   logger.debug(`[handleConfigSymlink] ${limitStringSize(ensureString(config), 50)}`);
 
   if (await isPathOfType(config.dest, 'symlink')) {
-    return 'present';
+    return { status: 'present' };
   }
 
-  if (await createConfigSymLink(config)) {
-    return 'created';
+  const symlinkResult = await createConfigSymLink(config);
+
+  if (symlinkResult instanceof Error) {
+    return {
+      status:'failed',
+      reason: symlinkResult.message
+    };
   }
 
-  return 'failed';
+  return { status: 'created' };
 }
 
 async function handleConfigCopy(config) {
@@ -66,28 +71,31 @@ async function handleConfigCopy(config) {
   // @TODO it can be a file too, so it should be tested for if before trying to see if it is there
   if (await isPathOfType(config.dest, 'directory')) {
     // @TODO backup if the user decides to copy anyway
-    return 'present';
+    return { status: 'present' };
   }
 
-  if (await copyConfig(config)) {
-    return 'created';
+  const copyResult = await copyConfig(config);
+
+  if (copyResult instanceof Error) {
+    return {
+      status:'failed',
+      reason: copyResult.message
+    };
   }
 
-  return 'failed';
+  return { status: 'created' };
 }
 
 async function handleConfig(config) {
   logger.debug(`[handleConfig] ${limitStringSize(ensureString(config), 50)}`);
-  const result = {
+  // @TODO if copied, check fo checksum of something that can state a diff between the two
+  const opResult = config.copy ? await handleConfigCopy(config) : await handleConfigSymlink(config);
+
+  return {
     dest: config.dest,
     type: config.copy ? 'copy' : 'symlink',
-    status: '',
+    ...opResult,
   };
-
-  result.status = config.copy ? await handleConfigCopy(config) : await handleConfigSymlink(config);
-
-  // @TODO if copied, check fo checksum of something that can state a diff between the two
-  return result;
 }
 
 async function handleProject(project) {
@@ -116,12 +124,12 @@ async function handleProject(project) {
   return results;
 }
 
-//// the start
+// the start
 
 const gConfigContent = await getGlobalInformation();
 
 const projectsToHandle = gConfigContent.dotfiles.map(handleProject);
 
-const results = await Promise.all(projectsToHandle);
+const projectResults = await Promise.all(projectsToHandle);
 
-logger.info(JSON.stringify(results.flat(), null, 2));
+projectResults.forEach(presentProjectResults);

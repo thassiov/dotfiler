@@ -57,6 +57,25 @@ giberishGenerator ./nested.conf.copy.2
 
 cd ..
 
+echo "Creating $dotfiles_dir/test.conf.copy.exist file"
+touch test.conf.copy.exist
+giberishGenerator ./test.conf.copy.exist
+echo "Copying $dotfiles_dir/test.conf.copy.exist to $dest_dir"
+cp ./test.conf.copy.exist $dest_dir
+
+echo "Creating $dotfiles_dir/test.dir.copy.exist directory"
+mkdir test.dir.copy.exist
+cd test.dir.copy.exist
+echo "Creating $dotfiles_dir/test.dir.copy.exist/nested.conf.copy.1 file"
+touch nested.conf.copy.1
+giberishGenerator ./nested.conf.copy.1
+echo "Creating $dotfiles_dir/test.dir.copy.exist/nested.conf.copy.2 file"
+touch nested.conf.copy.2
+giberishGenerator ./nested.conf.copy.2
+cd ..
+echo "Copying $dotfiles_dir/test.dir.copy.exist to $dest_dir"
+cp -r ./test.dir.copy.exist $dest_dir
+
 echo "Creating $dotfiles_dir/.dotfiler.json file"
 touch .dotfiler.json
 cat >.dotfiler.json <<EOF
@@ -79,6 +98,20 @@ cat >.dotfiler.json <<EOF
       "src":"test.dir.copy",
       "dest":"${dest_dir}/test.dir.copy",
       "copy": true
+    },
+    {
+      "src":"test.conf.copy.exist",
+      "dest":"${dest_dir}/test.conf.copy.exist",
+      "copy": true
+    },
+    {
+      "src":"test.dir.copy.exist",
+      "dest":"${dest_dir}/test.dir.copy.exist",
+      "copy": true
+    },
+    {
+      "src":"test.conf.link",
+      "dest":"/etc/test.conf.link.it.should.fail"
     }
   ]
 }
@@ -86,4 +119,4 @@ EOF
 
 cd /src
 
-# later we have to create a file in the dotfiles directory that points to a file that already exists
+# @TODO add in the configs some item with the "overwrite:true" prop as it is alreadi implemented and needs testing

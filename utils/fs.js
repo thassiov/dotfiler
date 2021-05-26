@@ -78,10 +78,10 @@ async function copyFile(config) {
 
     return true;
   } catch (err) {
-    console.error(err);
-    return false;
+    return err;
   }
 }
+
 async function copyDirectory(config) {
   logger.debug(`[copyDirectory] ${limitStringSize(ensureString(config), 50)}`);
   try {
@@ -89,8 +89,7 @@ async function copyDirectory(config) {
     await copy(config.src, config.dest, config.overwrite);
     return true;
   } catch (err) {
-    console.error(err);
-    return false;
+    return err;
   }
 }
 
@@ -105,8 +104,6 @@ async function fileLoader(filePath) {
     const fileBuffer = await fsp.readFile(filePath, { encoding: 'utf-8' });
     return fileBuffer;
   } catch (fileError) {
-    logger.error('Cannot reach input file');
-    logger.error(fileError);
     throw fileError;
   }
 }
@@ -117,8 +114,7 @@ async function createConfigSymLink(config) {
     await symlink(config.src, config.dest);
     return true;
   } catch (err) {
-    logger.error(`[createConfigSymLink] Could not create symlink for ${config.src}: ${err.message}`)
-    return false;
+    return err;
   }
 }
 
@@ -142,7 +138,7 @@ async function copyConfig(config) {
     // @NOTE aaaaaaaaaaaaaa
     return false;
   } catch (err) {
-    logger.error(err.message);
+    logger.error(`[copyConfig] Could not create copy for ${config.src}: ${err.message}`)
     return false;
   }
 }
