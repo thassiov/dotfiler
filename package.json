@@ -1,7 +1,7 @@
 {
   "name": "dotfiler",
   "version": "0.1.0",
-  "description": "I thought it was a cool idea.",
+  "description": "Keeps track",
   "main": "index.js",
   "type": "module",
   "directories": {

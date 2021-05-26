@@ -1,6 +1,6 @@
 <div align="center">
   <img src="dotfiler-logo.png">
-  <h3>keep track.</h3>
+  <h5>keeps track</h5>
 </div>
 
 # dotfiler
@@ -9,14 +9,12 @@
 
 It makes sure your configs are in the correct place. By having a list of the files and where they should be placed, _dotfiler_ makes sure everything is in the correct place so you don't have to check file by file.
 
-It creates symlinks of files and/or directories and also can make full copies of them.
+It creates symlinks of files and/or directories by default, but it also can make full copies of them.
 
 ## How it works
 
 _dotfiler_ looks for your `$HOME/dotfiles` directory, by default. Alternatively, you can point _dotfiler_ in the right direction by [using a config file](#looking-for-directories), but this is optional.
 In your dotfiles directory, _dotfiler_ will try to read the `.dotfiler.json` file. This is where you will list all the files and directories you wish _dotfiler_ to work with.
-
-By default
 
 It should look like this:
 
