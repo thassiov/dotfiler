@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="dotfiler-logo.png">
+</p>
+
 # dotfiler
 I thought it was a cool idea.
 
