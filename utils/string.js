@@ -11,8 +11,11 @@ function removeNewLines(str) {
   return str.replace(/\s+/g, '');
 }
 
-function limitStringSize(str, size) {
+function limitStringSize(str, size, showTail) {
   if (str.length > size ) {
+    if (showTail) {
+      return '...' + str.substring(str.length - size);
+    }
     return str.substring(0, size) + '...';
   }
   return str

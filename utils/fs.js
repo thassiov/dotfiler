@@ -1,6 +1,7 @@
 import {
   isAbsolute,
-  join, 
+  join,
+  dirname,
 } from 'path';
 import {
   ensureString,
@@ -8,6 +9,9 @@ import {
 } from './string.js';
 import logger from './logger.js';
 import { promises as fsp } from 'fs';
+
+// fs-extra is commonjs
+import fsExtra from 'fs-extra';
 
 async function isPathOfType(path, type) {
   logger.debug(`[isPathOfType] ${path}:${type}`);
@@ -38,6 +42,58 @@ async function isPathOfType(path, type) {
   }
 }
 
+function getDirectoryFromFilePath(filePath) {
+  return dirname(filePath);
+}
+
+async function ensureDir(dirPath) {
+  return fsExtra.ensureDir(dirPath);
+}
+
+async function copy(src, dest, overwrite = false) {
+  logger.debug(`[copy] ${limitStringSize(src, 25, true) + ':' + limitStringSize(dest, 25, true)}`);
+  // if the destination exists and the user don't set overwrite=true, I want the error to be thrown
+  const options = {
+    overwrite,
+    errorOnExist: !overwrite,
+  };
+
+  return fsExtra.copy(src, dest, options);
+}
+
+async function symlink(src, dest, overwrite = false) {
+  logger.debug(`[symlink] ${limitStringSize(src, 25, true) + ':' + limitStringSize(dest, 25, true)}`);
+  return await fsp.symlink(src, dest);
+}
+
+async function copyFile(config) {
+  logger.debug(`[copyFile] ${limitStringSize(ensureString(config), 50)}`);
+  try {
+    await ensureDir(getDirectoryFromFilePath(config.dest));
+    // @TODO I am not covering the case where the destination is a directory
+    // and not a file name. The destination has to have the file at the end
+    // of the path. I'll cover the case of putting the source inside the
+    // destination when it is a directory later.
+    await copy(config.src, config.dest, config.overwrite);
+
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+async function copyDirectory(config) {
+  logger.debug(`[copyDirectory] ${limitStringSize(ensureString(config), 50)}`);
+  try {
+    await ensureDir(config.dest);
+    await copy(config.src, config.dest, config.overwrite);
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
 async function fileLoader(filePath) {
   logger.debug(`[fileLoader] ${filePath}`);
 
@@ -58,10 +114,10 @@ async function fileLoader(filePath) {
 async function createConfigSymLink(config) {
   logger.debug(`[createConfigSymLink] ${limitStringSize(ensureString(config), 50)}`);
   try {
-    await fsp.symlink(config.src, config.dest);
+    await symlink(config.src, config.dest);
     return true;
   } catch (err) {
-    logger.error(err);
+    logger.error(`[createConfigSymLink] Could not create symlink for ${config.src}: ${err.message}`)
     return false;
   }
 }
@@ -69,11 +125,24 @@ async function createConfigSymLink(config) {
 async function copyConfig(config) {
   logger.debug(`[copyConfig] ${limitStringSize(ensureString(config), 50)}`);
   try {
-    // @TODO create directory
-    // @TODO copy contents from source
-    return true;
+    // @TODO maybe handle the case when the config path is a symlink as well, idk
+    const [isFile, isDirectory] = await Promise.all([
+      isPathOfType(config.src, 'file'),
+      isPathOfType(config.src, 'directory'),
+    ]);
+
+    if (isFile) {
+      return await copyFile(config);
+    }
+
+    if (isDirectory) {
+      return await copyDirectory(config);
+    }
+
+    // @NOTE aaaaaaaaaaaaaa
+    return false;
   } catch (err) {
-    logger.error(err);
+    logger.error(err.message);
     return false;
   }
 }

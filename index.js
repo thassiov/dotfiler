@@ -36,7 +36,7 @@ async function getGlobalInformation() {
         ],
       };
     }
-    logger.error(err);
+    logger.error(`${err.message}`);
     throw err;
   }
 }
