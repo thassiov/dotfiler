@@ -8,3 +8,11 @@ services:
       - .:/src
       - /tmp:/root
     working_dir: /src
+  test-watch:
+    image: node:16
+    user: "1000:1000"
+    tty: true
+    command: "npm run test:watch"
+    volumes:
+      - .:/src
+    working_dir: /src

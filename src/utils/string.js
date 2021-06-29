@@ -1,5 +1,3 @@
-import logger from './logger.js';
-
 function ensureString (data) {
   if (typeof data !== 'string') {
     return JSON.stringify(data);
@@ -22,12 +20,9 @@ function limitStringSize(str, size, showTail) {
 }
 
 function strToJson(str) {
-  logger.debug(`[strToJson] ${removeNewLines(limitStringSize(str, 50))}`);
   try {
     return JSON.parse(str);
   } catch (err) {
-    logger.error('Cannot parse string to json');
-    logger.error(err);
     throw err;
   }
 }

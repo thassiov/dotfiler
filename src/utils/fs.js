@@ -14,7 +14,6 @@ import { promises as fsp } from 'fs';
 import fsExtra from 'fs-extra';
 
 async function isPathOfType(path, type) {
-  logger.debug(`[isPathOfType] ${path}:${type}`);
   if (!path) {
     throw new Error(`Value for 'path' cannot be empty`);
   }
@@ -51,7 +50,6 @@ async function ensureDir(dirPath) {
 }
 
 async function copy(src, dest, overwrite = false) {
-  logger.debug(`[copy] ${limitStringSize(src, 25, true) + ':' + limitStringSize(dest, 25, true)}`);
   // if the destination exists and the user don't set overwrite=true, I want the error to be thrown
   const options = {
     overwrite,
@@ -62,12 +60,10 @@ async function copy(src, dest, overwrite = false) {
 }
 
 async function symlink(src, dest, overwrite = false) {
-  logger.debug(`[symlink] ${limitStringSize(src, 25, true) + ':' + limitStringSize(dest, 25, true)}`);
   return await fsp.symlink(src, dest);
 }
 
 async function copyFile(config) {
-  logger.debug(`[copyFile] ${limitStringSize(ensureString(config), 50)}`);
   try {
     await ensureDir(getDirectoryFromFilePath(config.dest));
     // @TODO I am not covering the case where the destination is a directory
@@ -83,7 +79,6 @@ async function copyFile(config) {
 }
 
 async function copyDirectory(config) {
-  logger.debug(`[copyDirectory] ${limitStringSize(ensureString(config), 50)}`);
   try {
     await ensureDir(config.dest);
     await copy(config.src, config.dest, config.overwrite);
@@ -94,7 +89,6 @@ async function copyDirectory(config) {
 }
 
 async function fileLoader(filePath) {
-  logger.debug(`[fileLoader] ${filePath}`);
 
   if (!filePath) {
     throw new Error('No input file provided');
@@ -109,7 +103,6 @@ async function fileLoader(filePath) {
 }
 
 async function createConfigSymLink(config) {
-  logger.debug(`[createConfigSymLink] ${limitStringSize(ensureString(config), 50)}`);
   try {
     await symlink(config.src, config.dest);
     return true;
@@ -119,7 +112,6 @@ async function createConfigSymLink(config) {
 }
 
 async function copyConfig(config) {
-  logger.debug(`[copyConfig] ${limitStringSize(ensureString(config), 50)}`);
   try {
     // @TODO maybe handle the case when the config path is a symlink as well, idk
     const [isFile, isDirectory] = await Promise.all([
@@ -144,8 +136,6 @@ async function copyConfig(config) {
 }
 
 function resolveConfigDestPaths(config) {
-  logger.debug(`[resolveConfigDestPaths] ${limitStringSize(ensureString(config), 50)}`);
-
   const { dest } = config;
 
   if (isAbsolute(dest)) {

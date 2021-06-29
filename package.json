@@ -5,15 +5,17 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "dotfiler": "./index.js"
+    "dotfiler": "./src/index.js"
   },
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "node ./src/index.js",
     "dev": "nodemon",
-    "dev:fixtures": "./development-fixtures.sh"
+    "dev:fixtures": "./development-fixtures.sh",
+    "test": "jest --runInBand",
+    "test:watch": "npm run test -- --watchAll"
   },
   "repository": {
     "type": "git",
@@ -32,10 +34,15 @@
   "homepage": "https://github.com/thassiov/dotfiler#readme",
   "dependencies": {
     "chalk": "^4.1.1",
+    "faker": "^5.5.3",
     "fs-extra": "^10.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "jest": "^27.0.5",
+    "nodemon": "^2.0.7",
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.7",
+    "babel-jest": "^27.0.5"
   },
   "nodemonConfig": {
     "ignore": [
@@ -43,10 +50,27 @@
       "node_modules"
     ],
     "watch": [
-      "./index.js",
-      "./utils",
+      "./src",
       "./develpment-fixtures.sh"
     ],
     "exec": "npm run dev:fixtures && npm start"
+  },
+  "jest": {
+    "testMatch": [
+      "**/__tests__/**/*.+(ts|tsx|js)",
+      "**/?(*.)+(spec|test).+(ts|tsx|js)"
+    ]
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
   }
 }
