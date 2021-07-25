@@ -5,8 +5,8 @@ import {
   DEFAULT_GLOBAL_CONFIG_FILE_PATH
 } from '../definitions/constants';
 import { fileLoader } from '../utils/fs';
-import { strToJson } from '../utils/string';
 import { IGlobalConfiguration } from '../definitions';
+import { yamlToJson } from '../utils/contentTypeConverter';
 
 /**
  * Gets the configuration file that lists the projects covered
@@ -16,13 +16,14 @@ import { IGlobalConfiguration } from '../definitions';
  */
 export async function handler(): Promise<IGlobalConfiguration> {
   try {
-    const config = strToJson(await fileLoader(DEFAULT_GLOBAL_CONFIG_FILE_PATH)) as IGlobalConfiguration;
-    return config;
+    return await yamlToJson(await fileLoader(DEFAULT_GLOBAL_CONFIG_FILE_PATH)) as IGlobalConfiguration;
   } catch (err) {
     if (err.code === 'ENOENT') {
       logger.debug(`[getGlobalConfig] Global information not found. Defaulting to ${DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location}`);
       return DEFAULT_GLOBAL_CONFIG_OBJECT;
     }
+    logger.error(`Error when reading the global configuration file: ${err.code}`);
+    logger.error(err.message);
     throw err;
   }
 }

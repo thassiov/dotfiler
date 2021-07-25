@@ -11,7 +11,6 @@
 $ npm install -G dotfiler
 
 ```
-
 Or you can download the executable and place it in your $PATH. As of right now, the executable only works in Linux.
 
 
@@ -23,8 +22,8 @@ It creates symlinks of files and/or directories by default, but it also can make
 
 ## How it works
 
-This tool looks for your `$HOME/.dotfiles` **directory**, by default. Once there, it tries to read a yaml (or json) file called `.dotfiler`. This file should have all your file mappings.
-After your config in place, you run `dotfiler`:
+This tool looks for your `$HOME/.dotfiles` directory by default. Once there, it tries to read a yaml (or json) file called `.dotfiler`. This file should have all your file mappings.
+After your config's in place, you run `dotfiler`:
 
 ```
 $ dotfiler

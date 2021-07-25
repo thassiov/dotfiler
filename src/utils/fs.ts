@@ -101,7 +101,7 @@ async function fileLoader(filePath: string): Promise<string> {
   }
 
   try {
-    const fileAsString = await fsp.readFile(filePath, { encoding: 'utf-8' });
+    const fileAsString = await fsp.readFile(tryExapandHomeTildeAlias(filePath), { encoding: 'utf-8' });
     return fileAsString;
   } catch (fileError) {
     throw fileError;
@@ -136,6 +136,10 @@ async function copyConfig(config: ILocalConfigurationItem): Promise<void> {
   }
 }
 
+function tryExapandHomeTildeAlias(path: string): string {
+  return path[0] === '~' ? join(process.env.HOME as string, path.slice(1)) : path;
+}
+
 function resolveConfigDestPaths(config: ILocalConfigurationItem): ILocalConfigurationItem {
   const { dest } = config;
 
@@ -146,7 +150,7 @@ function resolveConfigDestPaths(config: ILocalConfigurationItem): ILocalConfigur
   // @NOTE this '~' thing is important. Should be documented.
   return {
     ...config,
-    dest: dest[0] === '~' ? join(process.env.HOME as string, dest.slice(1)) : dest,
+    dest: tryExapandHomeTildeAlias(dest),
   }
 }
 
