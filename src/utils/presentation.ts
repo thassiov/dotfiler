@@ -1,14 +1,17 @@
+import {ILocalConfigurationOperationDetails} from '../definitions/ILocalConfiguration.js';
 import logger from './logger.js';
 
-function presentProjectResults(results) {
+type LogMethods = Pick<Console, 'info' | 'warn' | 'error'>;
+
+function presentProjectResults(results: ILocalConfigurationOperationDetails[]) {
   results.forEach(({type, dest, status, reason}) => {
-    const colors = {
+    const colors: { [type: string]: string } = {
       created: 'info',
       present: 'warn',
       failed: 'error',
     };
 
-    logger[colors[status]](`[${status.toUpperCase()}] ${type} - ${dest} ${reason ? '\n\t       ' + reason : ''}`);
+    logger[colors[status] as keyof LogMethods](`[${status.toUpperCase()}] ${type} - ${dest} ${reason ? '\n\t       ' + reason : ''}`);
   });
 }
 

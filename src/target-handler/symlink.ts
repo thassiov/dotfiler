@@ -1,19 +1,24 @@
-import {createConfigSymLink, doesTargetExist} from "../utils/fs";
+import {
+  ConfigurationOperationStatus,
+  ILocalConfigurationItem,
+  ILocalConfigurationOperationResult
+} from "../definitions";
 
-export async function symlink(config) {
+import { symlinkConfig, doesTargetExist } from "../utils/fs";
+
+export async function symlink(config: ILocalConfigurationItem): Promise<ILocalConfigurationOperationResult> {
   if (await doesTargetExist(config.dest)) {
-    return { status: 'present' };
+    return { status: ConfigurationOperationStatus.PRESENT };
   }
 
-  const symlinkResult = await createConfigSymLink(config);
-
-  if (symlinkResult instanceof Error) {
+  try {
+    await symlinkConfig(config);
+    return { status: ConfigurationOperationStatus.CREATED };
+  } catch (error) {
     return {
-      status:'failed',
-      reason: symlinkResult.message
+      status: ConfigurationOperationStatus.FAILED,
+      reason: error.message
     };
   }
-
-  return { status: 'created' };
 }
 

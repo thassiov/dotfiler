@@ -4,7 +4,16 @@ import { getLocalConfig } from '../internal';
 import { copyTarget, symlinkTarget } from '../target-handler';
 
 import { isPathOfType, resolveConfigDestPaths } from "../utils/fs";
-import { DEFAULT_CONFIG_FILE_NAME } from '../utils/constants.js';
+import {
+  ConfigurationOperationType,
+  ILocalConfigurationItem,
+  ILocalConfigurationOperationDetails
+} from '../definitions/ILocalConfiguration';
+
+import {
+  IGlobalConfigurationItem,
+  DEFAULT_CONFIG_FILE_NAME,
+} from '../definitions';
 
 /**
  * Gets the project's configuration and executes the copies and symlinks
@@ -12,7 +21,7 @@ import { DEFAULT_CONFIG_FILE_NAME } from '../utils/constants.js';
  *
  * @returns a JSON
  */
-export default async function projectHandler(project) {
+export default async function projectHandler(project: IGlobalConfigurationItem) {
 
   if (!project.location) {
     throw new Error(`project ${project.name || parse(project.location).base }: the 'location' property of a project cannot be empty`);
@@ -34,7 +43,7 @@ export default async function projectHandler(project) {
   const configFilePrefix = dirname(configPath);
 
   const configsToHandle = projectInfo.configs
-    .map(config => Object.assign({}, config, {src: join(configFilePrefix, config.src)}))
+    .map((config: ILocalConfigurationItem) => ({...config, src: join(configFilePrefix, config.src)}))
     .map(resolveConfigDestPaths)
     .map(handleConfig);
 
@@ -43,7 +52,7 @@ export default async function projectHandler(project) {
   return results;
 }
 
-async function shouldAppendDefaultConfigFileName(location) {
+async function shouldAppendDefaultConfigFileName(location: string): Promise<boolean> {
   // @TODO maybe handle the case when the config path is a syn link as well, idk
   if (await isPathOfType(location, 'directory')) {
     return true;
@@ -52,12 +61,13 @@ async function shouldAppendDefaultConfigFileName(location) {
   return false;
 }
 
-async function handleConfig(config) {
+async function handleConfig(config: ILocalConfigurationItem): Promise<ILocalConfigurationOperationDetails> {
   // @TODO if copied, check fo checksum of something that can state a diff between the two
   const opResult = config.copy ? await copyTarget(config) : await symlinkTarget(config);
 
-  return Object.assign({}, opResult, {
+  return {
+    ...opResult,
     dest: config.dest,
-    type: config.copy ? 'copy' : 'symlink',
-  });
+    type: config.copy ? ConfigurationOperationType.COPY : ConfigurationOperationType.SYMLINK,
+  };
 }

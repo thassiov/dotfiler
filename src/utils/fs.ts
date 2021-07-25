@@ -4,12 +4,12 @@ import {
   dirname,
 } from 'path';
 import logger from './logger.js';
-import { promises as fsp } from 'fs';
-
-// fs-extra is commonjs
+import { promises as fsp, Stats } from 'fs';
 import fsExtra from 'fs-extra';
 
-async function isPathOfType(path, type) {
+import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration.js';
+
+async function isPathOfType(path: string, type: string): Promise<boolean> {
   if (!path) {
     throw new Error(`Value for 'path' cannot be empty`);
   }
@@ -18,15 +18,17 @@ async function isPathOfType(path, type) {
     throw new Error(`Value for 'type' cannot be empty`);
   }
 
-  const testingMethod = {
-    'file':'isFile',
-    'directory':'isDirectory',
-    'symlink':'isSymbolicLink',
+  type StatTestingMethods = Pick<Stats, 'isFile' | 'isDirectory' | 'isSymbolicLink'>;
+
+  const testingMethod: { [type: string]: string } = {
+    file: 'isFile',
+    directory: 'isDirectory',
+    symlink: 'isSymbolicLink',
   };
 
   try {
     const pathStat = await fsp.lstat(path);
-    return await pathStat[testingMethod[type]]();
+    return pathStat[testingMethod[type] as keyof StatTestingMethods]();
   } catch (err) {
     if (err.code == 'ENOENT') {
       return false;
@@ -37,7 +39,7 @@ async function isPathOfType(path, type) {
   }
 }
 
-async function doesTargetExist(path) {
+async function doesTargetExist(path: string): Promise<boolean> {
   if (!path) {
     throw new Error(`Value for 'path' cannot be empty`);
   }
@@ -55,79 +57,69 @@ async function doesTargetExist(path) {
   }
 }
 
-function getDirectoryFromFilePath(filePath) {
+function getDirectoryFromFilePath(filePath: string): string {
   return dirname(filePath);
 }
 
-async function ensureDir(dirPath) {
+async function ensureDir(dirPath: string): Promise<void> {
   return fsExtra.ensureDir(dirPath);
 }
 
-async function copy(src, dest, overwrite = false) {
-  // if the destination exists and the user don't set overwrite=true, I want the error to be thrown
-  const options = {
-    overwrite,
-    errorOnExist: !overwrite,
-  };
-
-  return fsExtra.copy(src, dest, options);
+async function copy(src: string, dest: string): Promise<void> {
+  return fsExtra.copy(src, dest);
 }
 
-async function symlink(src, dest, overwrite = false) {
+async function symlink(src: string, dest: string): Promise<void> {
   return await fsp.symlink(src, dest);
 }
 
-async function copyFile(config) {
+async function copyFile(config: ILocalConfigurationItem): Promise<void> {
   try {
     await ensureDir(getDirectoryFromFilePath(config.dest));
     // @TODO I am not covering the case where the destination is a directory
     // and not a file name. The destination has to have the file at the end
     // of the path. I'll cover the case of putting the source inside the
     // destination when it is a directory later.
-    await copy(config.src, config.dest, config.overwrite);
-
-    return true;
+    return copy(config.src, config.dest);
   } catch (err) {
     return err;
   }
 }
 
-async function copyDirectory(config) {
+async function copyDirectory(config: ILocalConfigurationItem): Promise<void> {
   try {
     await ensureDir(config.dest);
-    await copy(config.src, config.dest, config.overwrite);
-    return true;
+    return copy(config.src, config.dest);
   } catch (err) {
     return err;
   }
 }
 
-async function fileLoader(filePath) {
-
+async function fileLoader(filePath: string): Promise<string> {
   if (!filePath) {
     throw new Error('No input file provided');
   }
 
   try {
-    const fileBuffer = await fsp.readFile(filePath, { encoding: 'utf-8' });
-    return fileBuffer;
+    const fileAsString = await fsp.readFile(filePath, { encoding: 'utf-8' });
+    return fileAsString;
   } catch (fileError) {
     throw fileError;
   }
 }
 
-async function createConfigSymLink(config) {
+async function symlinkConfig(config: ILocalConfigurationItem): Promise<void> {
   try {
-    await symlink(config.src, config.dest);
-    return true;
+    return symlink(config.src, config.dest);
   } catch (err) {
     return err;
   }
 }
 
-async function copyConfig(config) {
+async function copyConfig(config: ILocalConfigurationItem): Promise<void> {
   try {
     // @TODO maybe handle the case when the config path is a symlink as well, idk
+    // @TODO also, this could be better...
     const [isFile, isDirectory] = await Promise.all([
       isPathOfType(config.src, 'file'),
       isPathOfType(config.src, 'directory'),
@@ -135,21 +127,16 @@ async function copyConfig(config) {
 
     if (isFile) {
       return await copyFile(config);
-    }
-
-    if (isDirectory) {
+    } else if (isDirectory) {
       return await copyDirectory(config);
     }
-
-    // @NOTE aaaaaaaaaaaaa
-    return false;
   } catch (err) {
     logger.error(`[copyConfig] Could not create copy for ${config.src}: ${err.message}`)
-    return false;
+    throw err;
   }
 }
 
-function resolveConfigDestPaths(config) {
+function resolveConfigDestPaths(config: ILocalConfigurationItem): ILocalConfigurationItem {
   const { dest } = config;
 
   if (isAbsolute(dest)) {
@@ -157,16 +144,17 @@ function resolveConfigDestPaths(config) {
   }
 
   // @NOTE this '~' thing is important. Should be documented.
-  return Object.assign({}, config, {
-    dest: dest[0] === '~' ? join(process.env.HOME, dest.slice(1)) : dest,
-  });
+  return {
+    ...config,
+    dest: dest[0] === '~' ? join(process.env.HOME as string, dest.slice(1)) : dest,
+  }
 }
 
 export {
   isPathOfType,
   doesTargetExist,
   fileLoader,
-  createConfigSymLink,
+  symlinkConfig,
   copyConfig,
   resolveConfigDestPaths,
 };

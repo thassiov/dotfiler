@@ -1,18 +1,23 @@
-import {copyConfig, doesTargetExist, isPathOfType} from "../utils/fs";
+import {
+  ConfigurationOperationStatus,
+  ILocalConfigurationItem,
+  ILocalConfigurationOperationResult
+} from "../definitions";
 
-export async function copy(config) {
+import { copyConfig, doesTargetExist } from "../utils/fs";
+
+export async function copy(config: ILocalConfigurationItem): Promise<ILocalConfigurationOperationResult> {
   if (await doesTargetExist(config.dest)) {
-    return { status: 'present' };
+    return { status: ConfigurationOperationStatus.PRESENT };
   }
 
-  const copyResult = await copyConfig(config);
-
-  if (copyResult instanceof Error) {
+  try {
+    await copyConfig(config);
+    return { status: ConfigurationOperationStatus.CREATED };
+  } catch (error) {
     return {
-      status:'failed',
-      reason: copyResult.message
+      status: ConfigurationOperationStatus.FAILED,
+      reason: error.message
     };
   }
-
-  return { status: 'created' };
 }

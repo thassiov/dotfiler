@@ -1,15 +1,15 @@
-function ensureString (data) {
+function ensureString (data: unknown): unknown {
   if (typeof data !== 'string') {
     return JSON.stringify(data);
   }
   return data;
 }
 
-function removeNewLines(str) {
+function removeNewLines(str: string): string {
   return str.replace(/\s+/g, '');
 }
 
-function limitStringSize(str, size, showTail) {
+function limitStringSize(str: string, size: number, showTail: boolean): string {
   if (str.length > size ) {
     if (showTail) {
       return '...' + str.substring(str.length - size);
@@ -19,7 +19,7 @@ function limitStringSize(str, size, showTail) {
   return str
 }
 
-function strToJson(str) {
+function strToJson(str: string): any {
   try {
     return JSON.parse(str);
   } catch (err) {

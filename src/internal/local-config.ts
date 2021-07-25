@@ -1,3 +1,4 @@
+import { ILocalConfiguration } from "../definitions";
 import { fileLoader } from "../utils/fs";
 import { strToJson } from "../utils/string";
 
@@ -6,9 +7,9 @@ import { strToJson } from "../utils/string";
  * This file contains the target file (`src`), where it should be
  * placed (`dest`) and wheter to copy of symlink it (`copy`)
  *
- * @returns a JSON
+ * @returns ILocalConfiguration
  */
-export async function handler(configPath) {
+export async function handler(configPath: string): Promise<ILocalConfiguration> {
   try {
     const config = strToJson(await fileLoader(configPath));
     return config;
