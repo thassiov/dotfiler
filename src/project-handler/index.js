@@ -34,7 +34,7 @@ export default async function projectHandler(project) {
   const configFilePrefix = dirname(configPath);
 
   const configsToHandle = projectInfo.configs
-    .map(config => ({...config, src: join(configFilePrefix, config.src)}))
+    .map(config => Object.assign({}, config, {src: join(configFilePrefix, config.src)}))
     .map(resolveConfigDestPaths)
     .map(handleConfig);
 
@@ -56,9 +56,8 @@ async function handleConfig(config) {
   // @TODO if copied, check fo checksum of something that can state a diff between the two
   const opResult = config.copy ? await copyTarget(config) : await symlinkTarget(config);
 
-  return {
+  return Object.assign({}, opResult, {
     dest: config.dest,
     type: config.copy ? 'copy' : 'symlink',
-    ...opResult,
-  };
+  });
 }

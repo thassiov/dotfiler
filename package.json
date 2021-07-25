@@ -2,20 +2,22 @@
   "name": "dotfiler",
   "version": "0.1.0",
   "description": "Keeps track",
-  "main": "index.js",
-  "type": "module",
   "bin": {
-    "dotfiler": "./src/index.js"
+    "dotfiler": "./dist/bundle.js"
   },
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "start": "node ./src/index.js",
+    "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
     "dev:fixtures": "./development-fixtures.sh",
     "test": "jest --runInBand",
-    "test:watch": "npm run test -- --watchAll"
+    "test:watch": "npm run test -- --watchAll",
+    "compile": "tsc",
+    "bundle": "esbuild dist/index.js --bundle --minify --platform=node --outfile=dist/bundle.js",
+    "package":"pkg",
+    "build": "npm run compile && npm run bundle && npm run package"
   },
   "repository": {
     "type": "git",
@@ -38,39 +40,16 @@
     "fs-extra": "^10.0.0"
   },
   "devDependencies": {
-    "jest": "^27.0.5",
-    "nodemon": "^2.0.7",
     "@babel/core": "^7.14.6",
     "@babel/preset-env": "^7.14.7",
-    "babel-jest": "^27.0.5"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      ".git",
-      "node_modules"
-    ],
-    "watch": [
-      "./src",
-      "./develpment-fixtures.sh"
-    ],
-    "exec": "npm run dev:fixtures && npm start"
-  },
-  "jest": {
-    "testMatch": [
-      "**/__tests__/**/*.+(ts|tsx|js)",
-      "**/?(*.)+(spec|test).+(ts|tsx|js)"
-    ]
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ]
-    ]
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.4.2",
+    "esbuild": "^0.12.7",
+    "jest": "^27.0.5",
+    "nodemon": "^2.0.7",
+    "pkg": "^5.3.1",
+    "ts-jest": "^27.0.4",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   }
 }

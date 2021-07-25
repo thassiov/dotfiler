@@ -157,10 +157,9 @@ function resolveConfigDestPaths(config) {
   }
 
   // @NOTE this '~' thing is important. Should be documented.
-  return {
-    ...config,
+  return Object.assign({}, config, {
     dest: dest[0] === '~' ? join(process.env.HOME, dest.slice(1)) : dest,
-  };
+  });
 }
 
 export {
