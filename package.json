@@ -16,7 +16,7 @@
     "test:watch": "npm run test -- --watchAll",
     "compile": "tsc",
     "bundle": "esbuild dist/index.js --bundle --minify --platform=node --outfile=dist/bundle.js",
-    "package":"pkg",
+    "package": "pkg ./dist/bundle.js --targets node12-linux-x64 --output ./dist/dotfiler",
     "build": "npm run compile && npm run bundle && npm run package"
   },
   "repository": {
@@ -42,6 +42,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.6",
     "@babel/preset-env": "^7.14.7",
+    "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.2",
     "esbuild": "^0.12.7",
