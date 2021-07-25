@@ -1,9 +1,19 @@
 <div align="center">
   <img src="dotfiler-logo.png">
-  <h5>keeps track</h5>
+  <h5>everything in the right place</h5>
 </div>
 
 # dotfiler
+
+## Install
+
+```
+$ npm install -G dotfiler
+
+```
+
+Or you can download the executable and place it in your $PATH. As of right now, the executable only works in Linux.
+
 
 ## What it does
 
@@ -13,60 +23,90 @@ It creates symlinks of files and/or directories by default, but it also can make
 
 ## How it works
 
-_dotfiler_ looks for your `$HOME/dotfiles` directory, by default. Alternatively, you can point _dotfiler_ in the right direction by [using a config file](#looking-for-directories), but this is optional.
-In your dotfiles directory, _dotfiler_ will try to read the `.dotfiler.json` file. This is where you will list all the files and directories you wish _dotfiler_ to work with.
+This tool looks for your `$HOME/.dotfiles` **directory**, by default. Once there, it tries to read a yaml (or json) file called `.dotfiler`. This file should have all your file mappings.
+After your config in place, you run `dotfiler`:
+
+```
+$ dotfiler
+```
+
+> example gif
+
+## `.dotfiler`
+
+Right now this file has a simple structure: a `configs` prop as an array where each element corresponds to a file or directory.
 
 It should look like this:
 
-```json
-{
-  "configs": [
-    {
-      "src":"first.conf",
-      "dest":"~/first.conf"
-    },
-    {
-      "src":"conf-directory",
-      "dest":"/dest-dir/conf-directory"
-    },
-    {
-      "src":"second.conf",
-      "dest":"/dest-dir/second.conf",
-      "copy": true
-    },
-    {
-      "src":"conf-directory-copy",
-      "dest":"~/conf-directory-copy",
-      "copy": true
-    },
-  ...,
-  ]
-}
+```yaml
+---
+configs:
+- src: i3
+  dest: "~/.configs/i3"
+- src: tmux.conf
+  dest: "~/.tmux.conf"
 ```
-
-### Looking for directories
-
-_dotfiler_ *looks first* for the file `$HOME/.dotfiler.json` to know where the configs are. If this file is not found, it falls back to the `$HOME/dotfiles` directory. Note that in the `$HOME/.dotfiler.json` file you can put multiple directories containing configs to be used.
-
-## .dotfiler.json
-
-The default name for this configuration is `.dotfiler.json`, but can be named whatever you want if you describe it at the `$HOME/.dotfiler.json` file.
-
-Right now this json has a simple structure: a `configs` prop as an array where each element corresponds to a file or directory.
 
 ### `src`
 
-The name of your file or directory. It must not have any path delimiter before the name (like `./` or `..`) as the as the application will try to attach the current directory's path to it.
+The name of your file or directory. It must not have any path delimiter **before** the name (like `./` or `..`) as the as the application will try to attach the current directory's path to it.
 
 ### `dest`
 
-Where the contents of `src` should be placed at. In case of a file, the path must include its name.
-
-The path must be absolute, but it supports `~` to represent yout home directory.
+Where the contents of `src` should be placed at. The path must be absolute, but it supports `~` to represent your home directory.
 
 ### `copy` (optional)
 
 If this property is set to `true`, _dotfiler_ will try to copy the file or directory instead of creating a symlink.
+
+## Alternative path for your configs
+
+_dotfiler_ *looks first* for the file `$HOME/.dotfiler` to know where the configs are. If this file is not found, it falls back to the `$HOME/.dotfiles` directory. Note that in the `$HOME/.dotfiler` file you can put multiple directories containing configs to be used.
+
+### `$HOME/.dotfiler`
+
+This file has a simple structure: a `dotfiles` prop as an array where each element corresponds to a project/directory containing configurations to map.
+
+It should look like this:
+
+```yaml
+---
+dotfiles:
+- name: "main configs"
+  location: "~/.dotfiles-main"
+- name: "work related dotfiles"
+  location: "~/dev/work"
+```
+
+### `name` (optional)
+
+This property only purpose right now is to help identify the directory. Not used internaly right now.
+
+### `location`
+
+The location of your dotfiles. Differently from `$HOME/.dotfiles`, this directory can be named whatever you want.
+
+## Tree view
+
+```
+$HOME
+├── .bash_history
+├── .bash_logout
+├── .bashrc
+├── **.dotfiler** (optional)
+├── **.dotfiles** (default directory)
+│   ├── .conkyrc
+│   ├── **.dotfiler** (required)
+│   ├── .gitconfig
+│   ├── .gitignore
+│   ├── .zshrc
+│   ├── compton.conf
+│   ├── i3
+│   ├── termite
+│   └── tmux.conft
+└── .viminfo
+
+```
 
 ## Developing this thing
 
