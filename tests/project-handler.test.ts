@@ -1,8 +1,8 @@
 import { dirname } from 'path';
 
 import projectHandler from '../src/project-handler';
-import { DEFAULT_GLOBAL_CONFIG_OBJECT } from '../src/utils/constants';
-import { createLocalConfigObject } from './utils/mock-data';
+import { DEFAULT_GLOBAL_CONFIG_OBJECT } from '../src/definitions/constants';
+import { createLocalConfigObject } from './utils/mockData';
 import {
   createEmptyLocalConfigFile,
   createLocalConfigFile,
@@ -11,7 +11,7 @@ import {
   deleteSourceFilesBasedOnLocalConfig,
   makeLocalConfigFileUnreadable,
   removeLocalConfigDirectory,
-} from './utils/setUp';
+} from './utils/fs';
 
 describe('project handler', () => {
   let localConfigReference = { ...DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0] };

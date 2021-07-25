@@ -1,4 +1,4 @@
-import { DEFAULT_GLOBAL_CONFIG_OBJECT } from "../src/utils/constants";
+import { DEFAULT_GLOBAL_CONFIG_OBJECT } from "../src/definitions/constants";
 
 import {
   getGlobalConfig, getLocalConfig,
@@ -13,9 +13,9 @@ import {
   removeGlobalConfigFile,
   removeLocalConfigDirectory,
   removeLocalConfigFile,
-} from "./utils/setUp";
+} from "./utils/fs";
 
-import { createLocalConfigObject } from "./utils/mock-data";
+import { createLocalConfigObject } from "./utils/mockData";
 
 describe('Internal configuration files',() => {
   afterAll(async () => {

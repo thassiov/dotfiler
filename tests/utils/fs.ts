@@ -21,9 +21,10 @@ import {
 import {
   ILocalConfiguration,
   IGlobalConfiguration,
+  IGlobalConfigurationItem,
 } from '../../src/definitions';
 
-type ILocalConfigurationWithBaseLocation = ILocalConfiguration & Pick<IGlobalConfiguration, 'location'>;
+type ILocalConfigurationWithBaseLocation = ILocalConfiguration & Pick<IGlobalConfigurationItem, 'location'>;
 
 export async function removeGlobalConfigFile(): Promise<void> {
   await remove(DEFAULT_GLOBAL_CONFIG_FILE_PATH);
@@ -37,7 +38,7 @@ export async function removeLocalConfigFile(alternativeFilePath?: string): Promi
   await remove(alternativeFilePath || DEFAULT_LOCAL_CONFIG_FILE_PATH);
 }
 
-export async function createGlobalConfigFile(alternativeConfigObject?: string): Promise<void> {
+export async function createGlobalConfigFile(alternativeConfigObject?: IGlobalConfiguration): Promise<void> {
   await outputFile(DEFAULT_GLOBAL_CONFIG_FILE_PATH, JSON.stringify(alternativeConfigObject || DEFAULT_GLOBAL_CONFIG_OBJECT));
 }
 
