@@ -21,7 +21,6 @@ export default async function projectHandler(project) {
   let configPath = project.location;;
 
   if (await shouldAppendDefaultConfigFileName(configPath)) {
-    console.log('what');
     configPath = join(project.location, DEFAULT_CONFIG_FILE_NAME);
   }
 

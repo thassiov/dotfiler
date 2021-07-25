@@ -41,7 +41,7 @@ describe('Internal configuration files',() => {
       expect(() => getGlobalConfig()).rejects.toThrow('EACCES');
     });
 
-    test('no global configuration found', async () => {
+    test('no global configuration found (uses default config)', async () => {
       await removeGlobalConfigFile();
       expect(getGlobalConfig()).resolves.toEqual(DEFAULT_GLOBAL_CONFIG_OBJECT);
     });

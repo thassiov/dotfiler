@@ -2,12 +2,12 @@ import faker from 'faker';
 import { parse, resolve, join } from 'path';
 import {DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH} from '../../src/utils/constants';
 
-export function createLocalConfigObject(numberOfTargets = 3) {
+export function createLocalConfigObject(numberOfTargets = 3, alternativeDirPath = '') {
   return {
     configs: Array(numberOfTargets).fill(0).map(() => {
       const copy = shouldItemBeCopied();
       const baseDestDir = parse(DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH).dir;
-      let dest = resolve(baseDestDir, getSomeRandomDirectoryName());
+      let dest = resolve(baseDestDir, alternativeDirPath || getSomeRandomDirectoryName());
 
       let src;
 

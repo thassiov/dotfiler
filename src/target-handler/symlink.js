@@ -1,7 +1,7 @@
-import {createConfigSymLink, isPathOfType} from "../utils/fs";
+import {createConfigSymLink, doesTargetExist} from "../utils/fs";
 
 export async function symlink(config) {
-  if (await isPathOfType(config.dest, 'symlink')) {
+  if (await doesTargetExist(config.dest)) {
     return { status: 'present' };
   }
 

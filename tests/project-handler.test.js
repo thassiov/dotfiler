@@ -18,7 +18,7 @@ describe('project handler', () => {
   let configs;
 
   beforeEach(async () => {
-    configs = createLocalConfigObject();
+    configs = createLocalConfigObject(3, process.env.HOME);
     await createLocalConfigFile(configs);
     await createSourceFilesBasedOnLocalConfig({ ...configs, location: dirname(localConfigReference.location) });
   });
@@ -65,5 +65,19 @@ describe('project handler', () => {
   test('the configuration is correct', async () => {
     const config = { ...localConfigReference };
     expect(projectHandler(config)).resolves.toBeDefined();
+  });
+
+  test.only('will not overwrite if the target location already exist', async () => {
+    const config = { ...localConfigReference };
+    const results = await projectHandler(config);
+    expect(results.every(r => r.status == 'created')).toBeTruthy();
+    console.log(results);
+
+    console.log('aaaaa krl');
+
+    // run a second time to try to overwrite
+    const results2 = await projectHandler(config);
+    console.log(results2);
+    expect(results2.every(r => r.status == 'present')).toBeTruthy();
   });
 });

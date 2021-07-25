@@ -61,7 +61,6 @@ export async function makeGlobalConfigFileUnreadable() {
 export async function createSourceFilesBasedOnLocalConfig(localConfig) {
   const base = localConfig.location; // has to be a directory
   const filesToCreate = localConfig.configs.map(({ src }) => {
-    // console.log('crate', src);
     return src.endsWith('/') ? ensureDir(join(base, src)) : ensureFile(join(base, src));
   });
 
@@ -71,7 +70,6 @@ export async function createSourceFilesBasedOnLocalConfig(localConfig) {
 export async function deleteSourceFilesBasedOnLocalConfig(localConfig) {
   const base = localConfig.location; // has to be a directory
   const filesToDelete = localConfig.configs.map(({ src }) => {
-    // console.log('delete src:', join(base, src));
     return remove(join(base, src));
   });
 
@@ -80,7 +78,6 @@ export async function deleteSourceFilesBasedOnLocalConfig(localConfig) {
 
 export async function deleteDestFilesBasedOnLocalConfig(localConfig) {
   const filesToDelete = localConfig.configs.map(({ dest }) => {
-    // console.log('delete dest:', dest);
     return remove(dest);
   });
 

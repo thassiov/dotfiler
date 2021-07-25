@@ -3,10 +3,6 @@ import {
   join,
   dirname,
 } from 'path';
-import {
-  ensureString,
-  limitStringSize,
-} from './string.js';
 import logger from './logger.js';
 import { promises as fsp } from 'fs';
 
@@ -31,6 +27,24 @@ async function isPathOfType(path, type) {
   try {
     const pathStat = await fsp.lstat(path);
     return await pathStat[testingMethod[type]]();
+  } catch (err) {
+    if (err.code == 'ENOENT') {
+      return false;
+    }
+    logger.error('[isPathOfType] error');
+    logger.error(err);
+    throw err;
+  }
+}
+
+async function doesTargetExist(path) {
+  if (!path) {
+    throw new Error(`Value for 'path' cannot be empty`);
+  }
+
+  try {
+    await fsp.lstat(path);
+    return true;
   } catch (err) {
     if (err.code == 'ENOENT') {
       return false;
@@ -151,6 +165,7 @@ function resolveConfigDestPaths(config) {
 
 export {
   isPathOfType,
+  doesTargetExist,
   fileLoader,
   createConfigSymLink,
   copyConfig,
