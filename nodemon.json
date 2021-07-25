@@ -4,8 +4,9 @@
     "node_modules"
   ],
   "watch": [
-    "./src"
+    "./src",
+    "./tests"
   ],
   "exec": "npm start",
-  "ext": "ts"
+  "ext": "ts,tsx,js"
 }

@@ -1,20 +1,18 @@
 {
   "name": "dotfiler",
   "version": "0.1.0",
-  "description": "Keeps track",
+  "description": "everything in the right place",
+  "type": "module",
   "bin": {
     "dotfiler": "./dist/bundle.js"
-  },
-  "directories": {
-    "test": "tests"
   },
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
-    "dev:fixtures": "./development-fixtures.sh",
+    "dev:fixtures": "./test-data/development-fixtures.sh",
     "test": "jest --runInBand",
     "test:watch": "npm run test -- --watchAll",
-    "compile": "tsc",
+    "compile": "tsc --project ./tsconfig.production.json",
     "bundle": "esbuild dist/index.js --bundle --minify --platform=node --outfile=dist/bundle.js",
     "package": "pkg ./dist/bundle.js --targets node12-linux-x64 --output ./dist/dotfiler",
     "build": "npm run compile && npm run bundle && npm run package"
@@ -37,13 +35,16 @@
   "dependencies": {
     "chalk": "^4.1.1",
     "faker": "^5.5.3",
-    "fs-extra": "^10.0.0"
+    "fs-extra": "^10.0.0",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
     "@babel/preset-env": "^7.14.7",
+    "@types/faker": "^5.5.7",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
+    "@types/js-yaml": "^4.0.1",
     "@types/node": "^16.4.2",
     "esbuild": "^0.12.7",
     "jest": "^27.0.5",
