@@ -7,6 +7,6 @@
     "./src",
     "./tests"
   ],
-  "exec": "npm start",
+  "exec": "npm run dev:fixtures && npm start",
   "ext": "ts,tsx,js"
 }

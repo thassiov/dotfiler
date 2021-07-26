@@ -3,6 +3,8 @@ version: '3.8'
 services:
   dev:
     image: node:16
+    user: "1000:1000"
+    tty: true
     command: "npm run dev"
     volumes:
       - .:/src

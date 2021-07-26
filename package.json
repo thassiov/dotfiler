@@ -2,14 +2,14 @@
   "name": "dotfiler",
   "version": "0.1.0",
   "description": "everything in the right place",
-  "type": "module",
+  "main": "./src/index.ts",
   "bin": {
     "dotfiler": "./dist/bundle.js"
   },
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
-    "dev:fixtures": "./test-data/development-fixtures.sh",
+    "dev:fixtures": "ts-node ./tests/utils/generateMockEnvironment.ts",
     "test": "jest --runInBand",
     "test:watch": "npm run test -- --watchAll",
     "compile": "tsc --project ./tsconfig.production.json",
@@ -34,6 +34,7 @@
   "homepage": "https://github.com/thassiov/dotfiler#readme",
   "dependencies": {
     "chalk": "^4.1.1",
+    "dotenv": "^10.0.0",
     "faker": "^5.5.3",
     "fs-extra": "^10.0.0",
     "js-yaml": "^4.1.0"

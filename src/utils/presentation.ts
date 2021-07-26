@@ -1,5 +1,5 @@
-import {ILocalConfigurationOperationDetails} from '../definitions/ILocalConfiguration.js';
-import logger from './logger.js';
+import {ILocalConfigurationOperationDetails} from '../definitions/ILocalConfiguration';
+import logger from './logger';
 
 type LogMethods = Pick<Console, 'info' | 'warn' | 'error'>;
 

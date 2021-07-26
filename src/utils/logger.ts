@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { ensureString } from './string.js';
+import { ensureString } from './string';
 
 const logger = {
   error: (msg = '') => console.log(chalk.red(chalk.bold(ensureString(msg)))),

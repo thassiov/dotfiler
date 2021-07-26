@@ -1,14 +1,24 @@
 import faker from 'faker';
 import { parse, resolve, join } from 'path';
-import { ILocalConfiguration } from '../../src/definitions';
+import {normalize} from 'path/posix';
+import { IGlobalConfiguration, ILocalConfiguration } from '../../src/definitions';
 import { DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH } from '../../src/definitions/constants';
 
-export function createLocalConfigObject(numberOfTargets = 3, alternativeDirPath?: string): ILocalConfiguration {
+/**
+ * Creates a mock local config object (ILocalConfiguration)
+ *
+ * @param numberOfTargets - number of items to create in a local configuration
+ * @param alternativeDestBase - base dir for the that will be prepended at each `dest` property in the local configuration. If not provided, a random dir will be generated
+ * @param alternativeLocalConfigDirectory - directory where the configs are read. Serves as an alternative to `$HOME/.dotfiles`
+ *
+ * @returns ILocalConfiguration
+ */
+export function createLocalConfigObject(numberOfTargets = 3, alternativeDestBase?: string, alternativeLocalConfigDirectory?: string): ILocalConfiguration {
   return {
     configs: Array(numberOfTargets).fill(0).map(() => {
       const copy = shouldItemBeCopied();
-      const baseDestDir = parse(DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH).dir;
-      let dest = resolve(baseDestDir, alternativeDirPath || getSomeRandomDirectoryName());
+      const baseDestDir = parse(alternativeLocalConfigDirectory || DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH).dir;
+      let dest = resolve(baseDestDir, alternativeDestBase || getSomeRandomDirectoryName());
 
       let src: string;
 
@@ -37,6 +47,25 @@ export function createLocalConfigObject(numberOfTargets = 3, alternativeDirPath?
   };
 }
 
+/**
+ * Create a mock global config object (IGlobalConfiguration)
+ *
+ * @param numberOfTargets - number of items to create in a global configuration
+ * @param alternativeProjectsBasePath - base path prepended at all `location` properties of each project. If not provided, a random dir will be generated
+ *
+ * @returns IGlobalConfiguration
+ */
+export function createGlobalConfigObject(numberOfTargets = 3, alternativeProjectsBasePath?: string): IGlobalConfiguration {
+  return {
+    dotfiles: Array(numberOfTargets).fill(0).map(() => {
+      return {
+        name: getSomeRandomProjectName(),
+        location: normalize(join(alternativeProjectsBasePath || getSomeRandomDirectoryName(), getSomeRandomProjectName())),
+      };
+    }),
+  };
+}
+
 function getSomeRandomDirectoryName(): string {
   const name = faker.system.directoryPath();
   // Because when it generates this directory, the tests break because of lack of permissions
@@ -46,6 +75,10 @@ function getSomeRandomDirectoryName(): string {
   }
 
   return name;
+}
+
+function getSomeRandomProjectName(): string {
+  return `${faker.commerce.color()}-${faker.commerce.productName().toLowerCase().replace(/\ /g, '-')}-${faker.git.shortSha()}`;
 }
 
 function removeExtensionFromItem(target: string): string {

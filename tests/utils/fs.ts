@@ -16,6 +16,7 @@ import {
   DEFAULT_GLOBAL_CONFIG_FILE_PATH,
   DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH,
   DEFAULT_LOCAL_CONFIG_FILE_PATH,
+  DEFAULT_CONFIG_FILE_NAME,
 } from '../../src/definitions/constants';
 
 import {
@@ -38,27 +39,29 @@ export async function removeLocalConfigFile(alternativeFilePath?: string): Promi
   await remove(alternativeFilePath || DEFAULT_LOCAL_CONFIG_FILE_PATH);
 }
 
-export async function createGlobalConfigFile(alternativeConfigObject?: IGlobalConfiguration): Promise<void> {
-  await outputFile(DEFAULT_GLOBAL_CONFIG_FILE_PATH, JSON.stringify(alternativeConfigObject || DEFAULT_GLOBAL_CONFIG_OBJECT));
+export async function createGlobalConfigFile(alternativeConfigObject?: IGlobalConfiguration, alternativeConfigFilePath?: string): Promise<void> {
+  console.debug('creating global config file', alternativeConfigFilePath);
+  await outputFile(join(alternativeConfigFilePath || DEFAULT_GLOBAL_CONFIG_FILE_PATH, DEFAULT_CONFIG_FILE_NAME), JSON.stringify(alternativeConfigObject || DEFAULT_GLOBAL_CONFIG_OBJECT));
 }
 
 export async function createLocalConfigDirectory(alternativeDirPath?: string): Promise<void> {
-  await ensureDir(alternativeDirPath || DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0].location);
+  await ensureDir(alternativeDirPath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string);
 }
 
 export async function createEmptyLocalConfigFile(alternativeFilePath?: string): Promise<void> {
   // I could've used `ensureFile` here, but this function does not overwrite the file and I wanted
   // this behavior. `outputFile` does overwrite.
-  await outputFile(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0].location, '');
+  await outputFile(join(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string, DEFAULT_CONFIG_FILE_NAME), '');
 }
 
 export async function createLocalConfigFile(configObject: ILocalConfiguration, alternativeFilePath?: string): Promise<void> {
-  await outputFile(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0].location, JSON.stringify(configObject));
+  console.debug('creating local config file', alternativeFilePath);
+  await outputFile(join(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string, DEFAULT_CONFIG_FILE_NAME), JSON.stringify(configObject));
 }
 
 export async function makeLocalConfigFileUnreadable(alternativeFilePath?: string): Promise<void> {
   // [https://nodejs.org/dist/latest-v14.x/docs/api/fs.html#fs_file_modes]
-  await chmod(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0].location, 0o000);
+  await chmod(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string, 0o000);
 }
 
 export async function makeGlobalConfigFileUnreadable(): Promise<void> {
@@ -67,8 +70,10 @@ export async function makeGlobalConfigFileUnreadable(): Promise<void> {
 }
 
 export async function createSourceFilesBasedOnLocalConfig(localConfig: ILocalConfigurationWithBaseLocation): Promise<void> {
+  console.debug('creating source files from config file');
   const base = localConfig.location; // has to be a directory
   const filesToCreate = localConfig.configs.map(({ src }) => {
+    console.log(`${base}/${src}`);
     return src.endsWith('/') ? ensureDir(join(base, src)) : ensureFile(join(base, src));
   });
 

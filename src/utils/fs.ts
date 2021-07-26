@@ -3,11 +3,11 @@ import {
   join,
   dirname,
 } from 'path';
-import logger from './logger.js';
+import logger from './logger';
 import { promises as fsp, Stats } from 'fs';
 import fsExtra from 'fs-extra';
 
-import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration.js';
+import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration';
 
 async function isPathOfType(path: string, type: string): Promise<boolean> {
   if (!path) {
