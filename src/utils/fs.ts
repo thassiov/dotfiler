@@ -2,10 +2,13 @@ import {
   isAbsolute,
   join,
   dirname,
+  normalize,
+  parse,
 } from 'path';
-import logger from './logger';
 import { promises as fsp, Stats } from 'fs';
 import fsExtra from 'fs-extra';
+
+import logger from './logger';
 
 import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration';
 
@@ -39,6 +42,35 @@ async function isPathOfType(path: string, type: string): Promise<boolean> {
   }
 }
 
+async function typeOfTarget(path: string): Promise<string> {
+  if (!path) {
+    throw new Error(`Value for 'path' cannot be empty`);
+  }
+
+  try {
+    const pathStat = await fsp.lstat(path);
+
+    if (pathStat.isSymbolicLink()) {
+      return 'symlink';
+    }
+
+    if (pathStat.isFile()) {
+      return 'file';
+    }
+
+    if (pathStat.isDirectory()) {
+      return 'directory';
+    }
+
+    return 'unsupported';
+  } catch (err) {
+    if (err.code == 'ENOENT') {
+      return 'enoent';
+    }
+    throw err;
+  }
+}
+
 async function doesTargetExist(path: string): Promise<boolean> {
   if (!path) {
     throw new Error(`Value for 'path' cannot be empty`);
@@ -61,16 +93,53 @@ function getDirectoryFromFilePath(filePath: string): string {
   return dirname(filePath);
 }
 
+function getBaseFromFilePath(filePath: string): string {
+  return parse(filePath).base;
+}
+
 async function ensureDir(dirPath: string): Promise<void> {
   return fsExtra.ensureDir(dirPath);
 }
 
 async function copy(src: string, dest: string): Promise<void> {
-  return fsExtra.copy(src, dest);
+  if (!await doesTargetExist(src)) {
+    throw new Error(`Source file/directory does not exist: ${src}`);
+  }
+
+  return await fsExtra.copy(src, dest);
 }
 
 async function symlink(src: string, dest: string): Promise<void> {
-  return await fsp.symlink(src, dest);
+  if (!await doesTargetExist(src)) {
+    throw new Error(`Source file/directory does not exist: ${src}`);
+  }
+
+  if (!await doesTargetExist(getDirectoryFromFilePath(dest))) {
+    await ensureDir(getDirectoryFromFilePath(dest));
+    // throw new Error(`Parent directory for that will hold the symlink for ${src} does not exist: ${dest}`);
+  }
+
+  const srcType = await typeOfTarget(src);
+  const destType = await typeOfTarget(dest);
+
+  switch (destType) {
+    case 'enoent':
+      // if the source is a directory, the destination cannot have a trailing '/' or else it won't create the symlink
+      return await fsp.symlink(src, srcType == 'directory' ? removeSlashFromDirectoryPathIfPresent(dest) : dest);
+    case 'directory':
+      return await fsp.symlink(src, dest);
+    default:
+    const fileName = getBaseFromFilePath(src);
+    return await fsp.symlink(src, normalize(join(dest, fileName)));
+  }
+}
+
+function removeSlashFromDirectoryPathIfPresent(path: string): string {
+  if (path.endsWith('/')) {
+    return path.slice(0, -1)
+  }
+
+  return path;
 }
 
 async function copyFile(config: ILocalConfigurationItem): Promise<void> {

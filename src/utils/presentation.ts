@@ -11,7 +11,7 @@ function presentProjectResults(results: ILocalConfigurationOperationDetails[]) {
       failed: 'error',
     };
 
-    logger[colors[status] as keyof LogMethods](`[${status.toUpperCase()}] ${type} - ${dest} ${reason ? '\n\t       ' + reason : ''}`);
+    logger[colors[status] as keyof LogMethods](`[${status.toUpperCase()}] ${type} - ${dest} ${reason ? '\n         ' + reason : ''}`);
   });
 }
 

@@ -28,11 +28,16 @@ async function createTestData() {
   await ensureDir(projectBasePath);
 
   const globalConfigObject = createGlobalConfigObject(NUMBER_OF_PROJECTS, projectBasePath);
+  console.log('[GLOBAL CONFIG] - ', JSON.stringify(globalConfigObject, null, 2));
+  console.log();
 
   await createGlobalConfigFile(globalConfigObject, GLOBAL_CONFIG_PATH);
 
   const localConfigsToCreate = globalConfigObject.dotfiles.map((project: any) => {
     const localProject = createLocalConfigObject(NUMBER_OF_CONFIGS_PER_PROJECT, `${project.location}-dest`, project.location);
+    console.log('[LOCAL CONFIG] - ', JSON.stringify(localProject, null, 2));
+    console.log();
+
     return [
       createLocalConfigFile(localProject, project.location),
       createSourceFilesBasedOnLocalConfig({ ...localProject, location: project.location }),

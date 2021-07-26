@@ -5,10 +5,10 @@ services:
     image: node:16
     user: "1000:1000"
     tty: true
-    command: "npm run dev"
     volumes:
       - .:/src
       - /tmp:/root
+    command: "npm run dev"
     working_dir: /src
   test-watch:
     image: node:16
