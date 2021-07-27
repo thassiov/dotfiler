@@ -101,7 +101,7 @@ function shouldItemHaveExtension(): boolean {
   return coinFlip();
 }
 
-function coinFlip(): boolean {
+export function coinFlip(): boolean {
   const min = Math.ceil(0);
   const max = Math.floor(1000);
   const result = Math.floor(Math.random() * (max - min)) + min;

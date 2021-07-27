@@ -22,7 +22,6 @@ import {
  * @returns a JSON
  */
 export default async function projectHandler(project: IGlobalConfigurationItem) {
-
   if (!project.location) {
     throw new Error(`project ${project.name || parse(project.location).base }: the 'location' property of a project cannot be empty`);
   }
@@ -47,7 +46,7 @@ export default async function projectHandler(project: IGlobalConfigurationItem) 
     .map(resolveConfigDestPaths)
     .map(handleConfig);
 
-  const results = await Promise.all(configsToHandle);
+  const results = await Promise.allSettled(configsToHandle);
 
   return results;
 }

@@ -6,9 +6,12 @@ import projectHandler from './project-handler/index';
 import { presentProjectResults } from './utils/presentation';
 import { getGlobalConfig } from './internal';
 import logger from './utils/logger';
+import {ILocalConfigurationOperationDetails} from './definitions';
+
+type ConfigurationRunResult = PromiseSettledResult<ILocalConfigurationOperationDetails>;
+type ProjectRunResults = PromiseSettledResult<ConfigurationRunResult[]>;
 
 (async() => {
-
   const cliArgs = getFilePathFromCliArgs(process.argv);
 
   try {
@@ -16,15 +19,11 @@ import logger from './utils/logger';
 
   const projectsToHandle = gConfigContent.dotfiles.map(projectHandler);
 
-  const projectResults = await Promise.allSettled(projectsToHandle);
-
-  projectResults.forEach((project) => {
-    if (project.status == 'fulfilled') {
-      presentProjectResults(project.value);
-    } else {
-      logger.error(project.reason);
-    }
+  const runResults = await Promise.allSettled(projectsToHandle).then((projectsResults: ProjectRunResults[]) => {
+    return projectsResults.map(getProjectRunResults).flat();
   });
+
+  presentProjectResults(runResults);
 
   } catch (err) {
     logger.error(err);
@@ -39,4 +38,20 @@ function getFilePathFromCliArgs(args: Array<string>): string {
     return usefulStrings[0] as string;
   }
   return '';
+}
+
+function getProjectRunResults(runData: ProjectRunResults) {
+  if (runData.status == 'fulfilled') {
+      return (runData as PromiseFulfilledResult<ConfigurationRunResult[]>).value.map(getConfigurationRunResults)
+  }
+
+  return (runData as PromiseRejectedResult).reason;
+}
+
+function getConfigurationRunResults(runData: ConfigurationRunResult) {
+  if (runData.status === 'fulfilled') {
+    return runData.value;
+  }
+
+  return runData.reason;
 }

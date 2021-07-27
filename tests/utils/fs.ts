@@ -25,7 +25,12 @@ import {
   IGlobalConfigurationItem,
 } from '../../src/definitions';
 
-type ILocalConfigurationWithBaseLocation = ILocalConfiguration & Pick<IGlobalConfigurationItem, 'location'>;
+import {
+  copyTarget,
+  symlinkTarget
+} from '../../src/target-handler';
+
+export type ILocalConfigurationWithBaseLocation = ILocalConfiguration & Pick<IGlobalConfigurationItem, 'location'>;
 
 export async function removeGlobalConfigFile(): Promise<void> {
   await remove(DEFAULT_GLOBAL_CONFIG_FILE_PATH);
@@ -40,7 +45,6 @@ export async function removeLocalConfigFile(alternativeFilePath?: string): Promi
 }
 
 export async function createGlobalConfigFile(alternativeConfigObject?: IGlobalConfiguration, alternativeConfigFilePath?: string): Promise<void> {
-  console.debug('creating global config file', alternativeConfigFilePath);
   await outputFile(join(alternativeConfigFilePath || DEFAULT_GLOBAL_CONFIG_FILE_PATH, DEFAULT_CONFIG_FILE_NAME), JSON.stringify(alternativeConfigObject || DEFAULT_GLOBAL_CONFIG_OBJECT));
 }
 
@@ -55,13 +59,16 @@ export async function createEmptyLocalConfigFile(alternativeFilePath?: string): 
 }
 
 export async function createLocalConfigFile(configObject: ILocalConfiguration, alternativeFilePath?: string): Promise<void> {
-  console.debug('creating local config file', alternativeFilePath);
   await outputFile(join(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string, DEFAULT_CONFIG_FILE_NAME), JSON.stringify(configObject));
 }
 
 export async function makeLocalConfigFileUnreadable(alternativeFilePath?: string): Promise<void> {
+  await makePathUnreadable(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string);
+}
+
+export async function makePathUnreadable(path: string): Promise<void> {
   // [https://nodejs.org/dist/latest-v14.x/docs/api/fs.html#fs_file_modes]
-  await chmod(alternativeFilePath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string, 0o000);
+  await chmod(path, 0o000);
 }
 
 export async function makeGlobalConfigFileUnreadable(): Promise<void> {
@@ -70,11 +77,18 @@ export async function makeGlobalConfigFileUnreadable(): Promise<void> {
 }
 
 export async function createSourceFilesBasedOnLocalConfig(localConfig: ILocalConfigurationWithBaseLocation): Promise<void> {
-  console.debug('creating source files from config file');
   const base = localConfig.location; // has to be a directory
   const filesToCreate = localConfig.configs.map(({ src }) => {
-    console.log(`${base}/${src}`);
     return src.endsWith('/') ? ensureDir(join(base, src)) : ensureFile(join(base, src));
+  });
+
+  await Promise.all(filesToCreate);
+}
+
+export async function createDestinationFilesBasedOnLocalConfig(localConfig: ILocalConfigurationWithBaseLocation): Promise<void> {
+  const filesToCreate = localConfig.configs.map((config) => {
+    const src = join(localConfig.location, config.src);
+    return config.copy ? copyTarget({...config, src}) : symlinkTarget({...config, src});
   });
 
   await Promise.all(filesToCreate);

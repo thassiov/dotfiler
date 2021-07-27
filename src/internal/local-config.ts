@@ -1,7 +1,6 @@
 import { ILocalConfiguration } from "../definitions";
 import {yamlToJson} from "../utils/contentTypeConverter";
 import { fileLoader } from "../utils/fs";
-import logger from "../utils/logger";
 
 /**
  * Gets the file that tracks the contents of the current project.
@@ -14,8 +13,6 @@ export async function handler(configPath: string): Promise<ILocalConfiguration> 
   try {
     return await yamlToJson(await fileLoader(configPath)) as ILocalConfiguration;
   } catch (err) {
-    logger.error(`Error when reading the local configuration file (${configPath}): ${err.code}`);
-    logger.error(err.message);
-    throw err;
+    throw new Error(`Could not read the following local config: ${configPath}\tReason: ${err.message} [${err.code}]`);
   }
 }

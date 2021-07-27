@@ -11,6 +11,7 @@ const logger = {
       console.log(ensureString(msg));
     }
   },
+  log: (msg: string) => console.log(msg),
 };
 
 export default logger;
