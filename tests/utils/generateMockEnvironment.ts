@@ -34,15 +34,15 @@ async function createTestData() {
   await ensureDir(projectBasePath);
 
   const globalConfigObject = createGlobalConfigObject(NUMBER_OF_PROJECTS, projectBasePath);
-  console.log('[GLOBAL CONFIG] - ', JSON.stringify(globalConfigObject, null, 2));
-  console.log();
+  console.debug('[GLOBAL CONFIG] - ', JSON.stringify(globalConfigObject, null, 2));
+  console.debug();
 
   await createGlobalConfigFile(globalConfigObject, GLOBAL_CONFIG_PATH);
 
   const localConfigsAndLocations: ILocalConfigurationWithBaseLocation[] = globalConfigObject.dotfiles.map((project: any) => {
     const localProject = createLocalConfigObject(NUMBER_OF_CONFIGS_PER_PROJECT, `${project.location}-dest`, project.location);
-    console.log('[LOCAL CONFIG] - ', JSON.stringify(localProject, null, 2));
-    console.log();
+    console.debug('[LOCAL CONFIG] - ', JSON.stringify(localProject, null, 2));
+    console.debug();
 
     return {
       ...localProject,
@@ -61,13 +61,13 @@ async function createTestData() {
   // change permissions of some destination directories so some operation can fail
   await makeSomeDestinationDirectoriesUnreadable(localConfigsAndLocations);
 
-  console.debug(`Test data is set at ${GLOBAL_CONFIG_PATH}`);
+  console.log(`Test data is set at ${GLOBAL_CONFIG_PATH}`);
 }
 
 async function deleteTestData() {
   await remove(GLOBAL_CONFIG_PATH);
 
-  console.debug(`Test data at ${GLOBAL_CONFIG_PATH} has been removed`);
+  console.log(`Test data at ${GLOBAL_CONFIG_PATH} has been removed`);
 }
 
 async function createLocalConfigs(localConfigs: ILocalConfigurationWithBaseLocation[]): Promise<void> {

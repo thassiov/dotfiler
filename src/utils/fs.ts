@@ -181,7 +181,7 @@ async function symlinkConfig(config: ILocalConfigurationItem): Promise<void> {
   try {
     return symlink(config.src, config.dest);
   } catch (err) {
-    throw new Error(`[symlinkConfig] Could not symlink ${config.src}: ${err.message}`);
+    throw new Error(`Could not symlink ${config.src}: ${err.message}`);
   }
 }
 
@@ -200,7 +200,7 @@ async function copyConfig(config: ILocalConfigurationItem): Promise<void> {
       return await copyDirectory(config);
     }
   } catch (err) {
-    throw new Error(`[copyConfig] Could not copy ${config.src}: ${err.message}`);
+    throw new Error(`Could not copy ${config.src}: ${err.message}`);
   }
 }
 
