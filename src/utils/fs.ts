@@ -229,4 +229,5 @@ export {
   symlinkConfig,
   copyConfig,
   resolveConfigDestPaths,
+  getBaseFromFilePath,
 };

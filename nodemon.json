@@ -7,6 +7,6 @@
     "./src",
     "./tests"
   ],
-  "exec": "npm run dev:fixtures && npm start",
+  "exec": "npm run dev:fixtures && npm start $(cat .local-project-path)",
   "ext": "ts,tsx,js"
 }

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { ensureDir, remove } from "fs-extra";
+import { writeFile } from 'fs/promises';
 import {join} from 'path';
 
 import {
@@ -19,7 +20,7 @@ import {
 } from "./mockData";
 
 const GLOBAL_CONFIG_PATH = process.env.DOTFILER_GLOBAL_CONFIG_PATH as string;
-const NUMBER_OF_PROJECTS = 3;
+const NUMBER_OF_PROJECTS = 1;
 const NUMBER_OF_CONFIGS_PER_PROJECT = 6;
 
 (async() => {
@@ -49,6 +50,11 @@ async function createTestData() {
       location: project.location as string
     };
   });
+
+  // this is here so I can pass the location of the created project to the application through the cli
+  // see nodemon.json to see the command
+  const localFile = `${process.cwd()}/.local-project-path`;
+  await writeFile(localFile, localConfigsAndLocations[0]?.location as string, 'utf8');
 
   // first create the `.dotfiler` files inside each project (it also create the project directory)
   await createLocalConfigs(localConfigsAndLocations);
