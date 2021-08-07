@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/thassiov/dotfiler#readme",
   "dependencies": {
+    "argv": "0.0.2",
     "chalk": "^4.1.1",
     "dotenv": "^10.0.0",
     "faker": "^5.5.3",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.6",
     "@babel/preset-env": "^7.14.7",
+    "@types/argv": "0.0.5",
     "@types/faker": "^5.5.7",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",

@@ -5,17 +5,26 @@ dotenv.config();
 import projectHandler from './project-handler/index';
 import { presentProjectResults } from './utils/presentation';
 import logger from './utils/logger';
-import {ILocalConfigurationOperationDetails} from './definitions';
+import { ILocalConfigurationOperationDetails } from './definitions';
 import { getBaseFromFilePath } from './utils/fs';
-import { normalize } from 'path';
+import { getActionFromCli } from './cli';
 
 type ConfigurationRunResult = PromiseSettledResult<ILocalConfigurationOperationDetails>;
 
+type Actions = {
+  dotfiler: (path: string) => Promise<void>,
+  generateConfig: (path: string) => Promise<void>,
+}
+
+const actions: Actions = {
+  dotfiler: async (path: string) => doTheDotfilerStuff(path),
+  generateConfig: async (path: string) => generateADotfilerConfig(path),
+};
+
 (async() => {
   try {
-    const projectPath = getProjectPathFromCliArgs(process.argv);
-    const projectResults: ConfigurationRunResult[] = await projectHandler({ name: getBaseFromFilePath(projectPath), location: projectPath });
-    presentProjectResults(projectResults.map(getConfigurationRunResults));
+    const [ action, parameter ] = getActionFromCli();
+    await actions[action as keyof Actions](parameter);
   } catch (err) {
     logger.error(err);
     logger.error('Exiting...');
@@ -23,28 +32,20 @@ type ConfigurationRunResult = PromiseSettledResult<ILocalConfigurationOperationD
   }
 })();
 
-function getProjectPathFromCliArgs(args: Array<string>): string {
-  const path = getFilePathFromCliArgs(args);
-
-  if (!path || path == '.') {
-    return process.cwd();
-  }
-
-  return normalize(path);
-}
-
-function getFilePathFromCliArgs(args: Array<string>): string {
-  const usefulStrings = args.slice(2);
-  if (usefulStrings.length) {
-    return usefulStrings[0] as string;
-  }
-  return '';
-}
-
 function getConfigurationRunResults(runData: ConfigurationRunResult) {
   if (runData.status === 'fulfilled') {
     return runData.value;
   }
 
   return runData.reason;
+}
+
+async function doTheDotfilerStuff(projectPath: string): Promise<void> {
+    const projectResults: ConfigurationRunResult[] = await projectHandler({ name: getBaseFromFilePath(projectPath), location: projectPath });
+    presentProjectResults(projectResults.map(getConfigurationRunResults));
+}
+
+async function generateADotfilerConfig(projectPath: string): Promise<void> {
+  projectPath;
+  return Promise.resolve();
 }

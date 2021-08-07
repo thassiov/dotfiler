@@ -10,7 +10,8 @@ import fsExtra from 'fs-extra';
 
 import logger from './logger';
 
-import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration';
+import { ILocalConfiguration, ILocalConfigurationItem } from '../definitions/ILocalConfiguration';
+import { readdir, writeFile } from 'fs/promises';
 
 async function isPathOfType(path: string, type: string): Promise<boolean> {
   if (!path) {
@@ -91,6 +92,14 @@ async function doesTargetExist(path: string): Promise<boolean> {
 
 function getDirectoryFromFilePath(filePath: string): string {
   return dirname(filePath);
+}
+
+async function getContentsFromDirectory(path: string): Promise<string[]> {
+  return await readdir(path).then(items => items.filter((item: string) => !['.', '..'].includes(item)));
+}
+
+async function writeConfigToFile(path: string, config: ILocalConfiguration): Promise<void> {
+  await writeFile(path, JSON.stringify(config));
 }
 
 function getBaseFromFilePath(filePath: string): string {
@@ -230,4 +239,6 @@ export {
   copyConfig,
   resolveConfigDestPaths,
   getBaseFromFilePath,
+  getContentsFromDirectory,
+  writeConfigToFile,
 };
