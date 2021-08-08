@@ -27,6 +27,10 @@ export function createLocalConfigObject(numberOfTargets = 3, alternativeDestBase
       let src: string;
 
       if (shouldItemBeADirectory()) {
+        // @NOTE adding this slash to represent a dir is for testing purposes only because the
+        // code that generates test data needs to know if the target is a file or a dir. Poluting
+        // the config with props that are only there for testing (like `isDir: true`) didn't sound
+        // like a good solution.
         src = removeExtensionFromItem(faker.system.fileName()) + '/';
       } else {
         src = faker.system.fileName();

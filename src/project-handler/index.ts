@@ -63,7 +63,7 @@ export default async function projectHandler(project: IGlobalConfigurationItem) 
 }
 
 async function shouldAppendDefaultConfigFileName(location: string): Promise<boolean> {
-  // @TODO maybe handle the case when the config path is a syn link as well, idk
+  // @TODO maybe handle the case when the config path is a symlink as well, idk
   if (await isPathOfType(location, 'directory')) {
     return true;
   }

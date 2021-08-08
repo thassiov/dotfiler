@@ -1,3 +1,5 @@
+const { lint, DEFAULT_SAFE_SCHEMA } = require('yaml-lint');
+
 import {
   createLocalConfigDirectory,
   createLocalConfigFile,
@@ -10,6 +12,7 @@ import {
 import { createLocalConfigObject } from './utils/mockData';
 import { ILocalConfiguration } from '../src/definitions';
 import generateConfig from '../src/actions';
+import { yamlToJson } from '../src/utils/contentTypeConverter';
 
 describe('Dotfiler config generator', () => {
   let projectConfig: ILocalConfiguration = { configs: [] };
@@ -17,12 +20,19 @@ describe('Dotfiler config generator', () => {
   const TEST_PROJECT_DIRECTORY = `${TEST_PROJECTS_HOME}/test-project`;
   const TEST_PROJECT_DESTINATION_DIRECTORY = `${TEST_PROJECTS_HOME}`;
 
+  function removeTrailingSlashIfPresent(str: string): string {
+    if (str.endsWith('/')) {
+      return str.substring(0, str.length - 2);
+    }
+    return str;
+  }
+
   // create a new project with some sample files and a config file inside
   // also generate a destination directory for the files
   async function setupTestProject(projectPath: string, numberOfFiles = 3, destinationPath?: string): Promise<void> {
     await createLocalConfigDirectory(projectPath);
     const { configs } = createLocalConfigObject(numberOfFiles, destinationPath, projectPath);
-    projectConfig.configs = configs.map(({ src, dest }) => ({ src, dest }));
+    projectConfig.configs = configs.map(({ src, dest }) => ({ src: removeTrailingSlashIfPresent(src), dest: removeTrailingSlashIfPresent(dest) }));
     await createSourceFilesBasedOnLocalConfig({ ...projectConfig, location: projectPath });
   }
 
@@ -33,7 +43,7 @@ describe('Dotfiler config generator', () => {
   }
 
   beforeEach(async () => {
-    await setupTestProject(TEST_PROJECT_DIRECTORY, 5, TEST_PROJECT_DESTINATION_DIRECTORY);
+    await setupTestProject(TEST_PROJECT_DIRECTORY, 10, TEST_PROJECT_DESTINATION_DIRECTORY);
   });
 
   afterEach(async () => {
@@ -48,13 +58,18 @@ describe('Dotfiler config generator', () => {
   test('creates a json dotfiler config', async () => {
     const configPath = await generateConfig(TEST_PROJECT_DIRECTORY);
     const loadedConfigFromFs = JSON.parse(await readFileContent(configPath));
-    expect(loadedConfigFromFs.configs).toEqual(expect.arrayContaining(projectConfig.configs));
+    expect(loadedConfigFromFs).toHaveProperty('configs', expect.arrayContaining(projectConfig.configs));
   });
 
-  test.skip('creates a yaml dotfiler config', async () => {
+  test('creates a yaml dotfiler config', async () => {
     const configPath = await generateConfig(TEST_PROJECT_DIRECTORY, true);
+    const loadedConfigFromFs = await readFileContent(configPath);
 
-    const loadedConfigFromFs = JSON.parse(await readFileContent(configPath));
-    expect(loadedConfigFromFs).toEqual(projectConfig);
+    // make sure the content is yaml
+    expect(() => lint(loadedConfigFromFs, { schema: DEFAULT_SAFE_SCHEMA })).not.toThrow();
+
+    const jsonConfig = await yamlToJson(loadedConfigFromFs);
+
+    expect(jsonConfig).toHaveProperty('configs', expect.arrayContaining(projectConfig.configs))
   });
 });

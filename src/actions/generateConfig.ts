@@ -10,14 +10,10 @@ export default async function generateConfig(path: string, asYaml?: boolean): Pr
 
   const configFilePath = join(path, DEFAULT_CONFIG_FILE_NAME);
   const contents = await getContentsFromDirectory(path);
-  let projectConfig = JSON.stringify({
+  let projectConfig = {
     configs: contents.map((item) => ({ src: item, dest: join(resolve(path, '..'), item) })),
-  }, null, 2);
+  };
 
-  if (asYaml) {
-    projectConfig = await jsonToYaml(projectConfig);
-  }
-
-  await writeConfigToFile(configFilePath, projectConfig);
+  await writeConfigToFile(configFilePath, asYaml ?  await jsonToYaml(projectConfig) : JSON.stringify(projectConfig));
   return configFilePath;
 }

@@ -89,7 +89,7 @@ describe('Handling projects', () => {
 
     test('project configuration file has valid yaml', async () => {
       const jsonprojectConfigtr = await readFileContent(TEST_PROJECT_CONFIG_FILE_PATH);
-      const yamlprojectConfigtr = await jsonToYaml(jsonprojectConfigtr);
+      const yamlprojectConfigtr = await jsonToYaml(JSON.parse(jsonprojectConfigtr));
       await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, yamlprojectConfigtr);
       expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
     });
@@ -117,7 +117,7 @@ describe('Handling projects', () => {
       expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
     });
 
-    test.only.each([
+    test.each([
       { type: 'link', copy: false },
       { type: 'copy', copy: true },
     ])('cannot $type source file to destination: $type is already present', async ({ copy }) => {
