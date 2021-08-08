@@ -6,9 +6,6 @@
   "bin": {
     "dotfiler": "./dist/bundle.js"
   },
-  "files": [
-    "./dist/bundle.js"
-  ],
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
