@@ -112,17 +112,12 @@ async function ensureDir(dirPath: string): Promise<void> {
 
 async function copy(src: string, dest: string): Promise<void> {
   if (!await doesTargetExist(src)) {
-    throw new Error(`Source file/directory does not exist: ${src}`);
+    throw new Error(`Source file or directory does not exist: ${src}`);
   }
-
   return await fsExtra.copy(src, dest);
 }
 
 async function symlink(src: string, dest: string): Promise<void> {
-  if (!await doesTargetExist(src)) {
-    throw new Error(`Source file/directory does not exist: ${src}`);
-  }
-
   if (!await doesTargetExist(getDirectoryFromFilePath(dest))) {
     await ensureDir(getDirectoryFromFilePath(dest));
     // throw new Error(`Parent directory for that will hold the symlink for ${src} does not exist: ${dest}`);
@@ -187,6 +182,10 @@ async function fileLoader(filePath: string): Promise<string> {
 }
 
 async function symlinkConfig(config: ILocalConfigurationItem): Promise<void> {
+  if (!await doesTargetExist(config.src)) {
+    throw new Error(`Source file or directory does not exist: ${config.src}`);
+  }
+
   try {
     return symlink(config.src, config.dest);
   } catch (err) {
@@ -195,6 +194,10 @@ async function symlinkConfig(config: ILocalConfigurationItem): Promise<void> {
 }
 
 async function copyConfig(config: ILocalConfigurationItem): Promise<void> {
+  if (!await doesTargetExist(config.src)) {
+    throw new Error(`Source file or directory does not exist: ${config.src}`);
+  }
+
   try {
     // @TODO maybe handle the case when the config path is a symlink as well, idk
     // @TODO also, this could be better...

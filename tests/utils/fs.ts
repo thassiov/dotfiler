@@ -1,5 +1,6 @@
 import {
-  chmod
+  chmod,
+  readFile ,
 } from 'fs/promises';
 
 import { join } from 'path';
@@ -52,6 +53,15 @@ export async function createLocalConfigDirectory(alternativeDirPath?: string): P
   await ensureDir(alternativeDirPath || DEFAULT_GLOBAL_CONFIG_OBJECT?.dotfiles[0]?.location as string);
 }
 
+export async function createDirectoryAtPath(path: string, contents?: string[]): Promise<void> {
+  await ensureDir(path);
+
+  if (contents?.length) {
+    const contentToCreate = contents.map((contentName) => createFileOrDirectoryFromPath(join(path, contentName)));
+    await Promise.all(contentToCreate);
+  }
+}
+
 export async function createEmptyLocalConfigFile(alternativeFilePath?: string): Promise<void> {
   // I could've used `ensureFile` here, but this function does not overwrite the file and I wanted
   // this behavior. `outputFile` does overwrite.
@@ -76,13 +86,33 @@ export async function makeGlobalConfigFileUnreadable(): Promise<void> {
   await chmod(DEFAULT_GLOBAL_CONFIG_FILE_PATH, 0o000);
 }
 
+export async function deletePath(path: string): Promise<void> {
+  return remove(path);
+}
+
+export async function clearFile(filePath: string): Promise<void> {
+  await writeContentToFile(filePath, '');
+}
+
+export async function writeContentToFile(filePath: string, content = ''): Promise<void> {
+  await outputFile(filePath, content);
+}
+
+export async function readFileContent(filePath: string): Promise<string> {
+  return readFile(filePath, 'utf8');
+}
+
 export async function createSourceFilesBasedOnLocalConfig(localConfig: ILocalConfigurationWithBaseLocation): Promise<void> {
   const base = localConfig.location; // has to be a directory
   const filesToCreate = localConfig.configs.map(({ src }) => {
-    return src.endsWith('/') ? ensureDir(join(base, src)) : ensureFile(join(base, src));
+    return createFileOrDirectoryFromPath(join(base, src));
   });
 
   await Promise.all(filesToCreate);
+}
+
+export async function createFileOrDirectoryFromPath(path: string): Promise<void> {
+  path.endsWith('/') ? await ensureDir(path) : await ensureFile(path);
 }
 
 export async function createDestinationFilesBasedOnLocalConfig(localConfig: ILocalConfigurationWithBaseLocation): Promise<void> {

@@ -15,6 +15,11 @@ import {
   DEFAULT_CONFIG_FILE_NAME,
 } from '../definitions';
 
+type Settled = {
+  value?: object;
+  reason?: object;
+};
+
 /**
  * Gets the project's configuration and executes the copies and symlinks
  * defined for each target
@@ -38,6 +43,11 @@ export default async function projectHandler(project: IGlobalConfigurationItem) 
     throw new Error(`project ${project.name || parse(project.location).base }: the 'configs' property of the local config must be an array`);
   }
 
+  if (!projectInfo.configs.length) {
+    // nothing to do here.
+    return [];
+  }
+
   // this figures out the config file/dir full path as it will be needed later
   const configFilePrefix = dirname(configPath);
 
@@ -46,7 +56,8 @@ export default async function projectHandler(project: IGlobalConfigurationItem) 
     .map(resolveConfigDestPaths)
     .map(handleConfig);
 
-  const results = await Promise.allSettled(configsToHandle);
+  const results = await Promise.allSettled(configsToHandle)
+  .then(results => results.map((result: Settled) =>  result.value ? result.value : result.reason));
 
   return results;
 }
@@ -62,7 +73,7 @@ async function shouldAppendDefaultConfigFileName(location: string): Promise<bool
 
 async function handleConfig(config: ILocalConfigurationItem): Promise<ILocalConfigurationOperationDetails> {
   // @TODO if copied, check fo checksum of something that can state a diff between the two
-  const opResult = config.copy ? await copyTarget(config) : await symlinkTarget(config);
+  const opResult = config.copy == true ? await copyTarget(config) : await symlinkTarget(config);
 
   return {
     ...opResult,

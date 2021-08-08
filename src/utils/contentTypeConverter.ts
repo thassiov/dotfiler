@@ -1,15 +1,26 @@
-import { load } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import logger from './logger';
 
-type ConvertionResult = {
+type ConvertionResultObject = {
   [name: string]: any;
 };
 
-export async function yamlToJson(yamlConfig: string): Promise<ConvertionResult> {
+type ConvertionResultString = string;
+
+export async function yamlToJson(yamlContent: string): Promise<ConvertionResultObject> {
   try {
-    return load(yamlConfig) as ConvertionResult;
+    return load(yamlContent) as ConvertionResultObject;
   } catch (convertionError) {
-    logger.error(`Could not convert yaml config file: ${convertionError.message}`);
+    logger.error(`Could not convert yaml content to json: ${convertionError.message}`);
+    throw convertionError;
+  }
+}
+
+export async function jsonToYaml(jsonContent: string): Promise<ConvertionResultString> {
+  try {
+    return dump(jsonContent) as ConvertionResultString;
+  } catch (convertionError) {
+    logger.error(`Could not convert json content to yaml: ${convertionError.message}`);
     throw convertionError;
   }
 }

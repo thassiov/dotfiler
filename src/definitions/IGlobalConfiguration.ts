@@ -1,5 +1,5 @@
 export interface IGlobalConfigurationItem {
-  name: string;
+  name?: string;
   location: string;
 }
 

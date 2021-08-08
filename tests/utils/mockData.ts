@@ -8,12 +8,16 @@ import { DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH } from '../../src/definitions/const
  * Creates a mock local config object (ILocalConfiguration)
  *
  * @param numberOfTargets - number of items to create in a local configuration
- * @param alternativeDestBase - base dir for the that will be prepended at each `dest` property in the local configuration. If not provided, a random dir will be generated
- * @param alternativeLocalConfigDirectory - directory where the configs are read. Serves as an alternative to `$HOME/.dotfiles`
+ * @param alternativeDestBase - base dir that will be prepended at each `dest` property in the local configuration. If not provided, a random dir will be generated
+ * @param alternativeLocalConfigDirectory - directory where the configs are read from. Serves as an alternative to `$HOME/.dotfiles`
  *
  * @returns ILocalConfiguration
  */
 export function createLocalConfigObject(numberOfTargets = 3, alternativeDestBase?: string, alternativeLocalConfigDirectory?: string): ILocalConfiguration {
+  if (numberOfTargets == 0) {
+    return { configs: [] };
+  }
+
   return {
     configs: Array(numberOfTargets).fill(0).map(() => {
       const copy = shouldItemBeCopied();
