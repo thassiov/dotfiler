@@ -1,6 +1,6 @@
 {
   "name": "dotfiler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "everything in the right place",
   "main": "./src/index.ts",
   "bin": {
@@ -27,7 +27,7 @@
     "configuration",
     "utility"
   ],
-  "author": "Thassio Victor <tvmcarvalho@gmail.com",
+  "author": "Thassio Victor <tvmcarvalho@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/thassiov/dotfiler/issues"
