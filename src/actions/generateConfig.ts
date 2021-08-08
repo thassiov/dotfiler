@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG_FILE_NAME } from "../definitions";
 import { jsonToYaml } from "../utils/contentTypeConverter";
 import { doesTargetExist, getContentsFromDirectory, writeConfigToFile } from "../utils/fs";
 
-export default async function generateConfig(path: string, asYaml?: boolean): Promise<string> {
+export default async function generateConfig(path: string, asYaml = true): Promise<string> {
   if (await doesTargetExist(join(path, DEFAULT_CONFIG_FILE_NAME))) {
     throw new Error(`There's a file named '.dotfiler' in this directory (${path})`);
   }

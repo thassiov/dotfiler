@@ -8,6 +8,8 @@ import logger from './utils/logger';
 import { getBaseFromFilePath } from './utils/fs';
 import { getActionFromCli } from './cli';
 import { ILocalConfigurationOperationDetails } from './definitions';
+import generateConfig from './actions';
+import chalk from 'chalk';
 
 (async() => {
   try {
@@ -15,7 +17,8 @@ import { ILocalConfigurationOperationDetails } from './definitions';
 
     switch (action) {
       case 'generateConfig':
-        await generateADotfilerConfig(parameter as string);
+        const resultPath = await generateADotfilerConfig(parameter as string);
+        console.log(chalk.greenBright(`dotfiler configuration generated at ${resultPath}`));
         break;
       case 'dotfiler':
         await doTheDotfilerStuff(parameter as string[]);
@@ -50,7 +53,6 @@ async function doTheDotfilerStuff(projectPaths: string[]): Promise<void> {
   presentProjectResults(projectResults, projectErrors);
 }
 
-async function generateADotfilerConfig(projectPath: string): Promise<void> {
-  projectPath;
-  return Promise.resolve();
+async function generateADotfilerConfig(projectPath: string): Promise<string> {
+  return generateConfig(projectPath);
 }

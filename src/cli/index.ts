@@ -1,14 +1,19 @@
 import argv from "argv";
 import { normalize } from "path";
 
+type json = {
+  [key: string]: unknown
+};
+
 export function getProjectPathsFromCliArgs(args: string[]): string[] {
   const usefulStrings = args.slice(2);
+  // the user want to run dotfiler in the current directory;
   if (!usefulStrings.length) {
-    return [];
+    return [process.cwd()];
   }
 
   return usefulStrings.map((path) => {
-    if (!path || path == '.') {
+    if (path == '.') {
       return process.cwd();
     }
 
@@ -17,10 +22,10 @@ export function getProjectPathsFromCliArgs(args: string[]): string[] {
 }
 
 export function getActionFromCli(): [ string, string | string[] ] {
-  const { generateConfig } = getCliArgs();
+  const { options } = getCliArgs();
 
-  if (generateConfig != undefined) {
-    return [ 'generateConfig', generateConfig == '' ? process.cwd() : generateConfig as string ];
+  if ((options as json)['generate-config']) {
+    return [ 'generateConfig', (options as json)['generate-config'] as string ];
   }
 
   return [ 'dotfiler', getProjectPathsFromCliArgs(process.argv) ];
