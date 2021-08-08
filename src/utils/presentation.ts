@@ -10,7 +10,7 @@ type SortedResults = {
   failed: ILocalConfigurationOperationDetails[],
 };
 
-function presentProjectResults(results: ILocalConfigurationOperationDetails[]): void {
+function presentProjectResults(results: ILocalConfigurationOperationDetails[], projectErrors: Error[]): void {
   const { created, present, failed } = results.sort(sortByOperationType).reduce((acc: SortedResults, curr: ILocalConfigurationOperationDetails) => {
     acc[curr.status].push(curr);
     return acc;
@@ -30,6 +30,11 @@ function presentProjectResults(results: ILocalConfigurationOperationDetails[]): 
     console.log(chalk.bgRed('[FAILED]'));
     failed.forEach(printResult);
   }
+
+  if (projectErrors.length) {
+    console.log(chalk.bgRed('[PROJECT ERRORS]'));
+    projectErrors.forEach(printErrorMessages);
+  }
 }
 
 function printResult({type, dest, status, reason}: ILocalConfigurationOperationDetails): void {
@@ -40,6 +45,10 @@ function printResult({type, dest, status, reason}: ILocalConfigurationOperationD
   };
 
   logger.log(chalk[colors[status] as keyof LogColors](`${type} - ${dest} ${reason ? '\n' + chalk.bold(reason) : ''}`));
+}
+
+function printErrorMessages(e: Error): void {
+  logger.log(chalk.red(e.message));
 }
 
 /**

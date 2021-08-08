@@ -1,32 +1,29 @@
 import argv from "argv";
 import { normalize } from "path";
 
-export function getProjectPathFromCliArgs(args: Array<string>): string {
-  const path = getFilePathFromCliArgs(args);
-
-  if (!path || path == '.') {
-    return process.cwd();
-  }
-
-  return normalize(path);
-}
-
-export function getFilePathFromCliArgs(args: Array<string>): string {
+export function getProjectPathsFromCliArgs(args: string[]): string[] {
   const usefulStrings = args.slice(2);
-  if (usefulStrings.length) {
-    return usefulStrings[0] as string;
+  if (!usefulStrings.length) {
+    return [];
   }
-  return '';
+
+  return usefulStrings.map((path) => {
+    if (!path || path == '.') {
+      return process.cwd();
+    }
+
+    return normalize(path);
+  });
 }
 
-export function getActionFromCli(): [ string, string ] {
+export function getActionFromCli(): [ string, string | string[] ] {
   const { generateConfig } = getCliArgs();
 
   if (generateConfig != undefined) {
     return [ 'generateConfig', generateConfig == '' ? process.cwd() : generateConfig as string ];
   }
 
-  return [ 'dotfiler', getProjectPathFromCliArgs(process.argv) ];
+  return [ 'dotfiler', getProjectPathsFromCliArgs(process.argv) ];
 }
 
 function getCliArgs(): { [key: string]: unknown } {

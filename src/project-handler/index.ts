@@ -15,7 +15,7 @@ import {
   DEFAULT_CONFIG_FILE_NAME,
 } from '../definitions';
 
-type Settled = {
+export type Settled = {
   value?: object;
   reason?: object;
 };
@@ -26,7 +26,7 @@ type Settled = {
  *
  * @returns a JSON
  */
-export default async function projectHandler(project: IGlobalConfigurationItem) {
+export default async function projectHandler(project: IGlobalConfigurationItem): Promise<ILocalConfigurationOperationDetails[]> {
   if (!project.location) {
     throw new Error(`project ${project.name || parse(project.location).base }: the 'location' property of a project cannot be empty`);
   }
@@ -59,7 +59,7 @@ export default async function projectHandler(project: IGlobalConfigurationItem) 
   const results = await Promise.allSettled(configsToHandle)
   .then(results => results.map((result: Settled) =>  result.value ? result.value : result.reason));
 
-  return results;
+  return results as ILocalConfigurationOperationDetails[];
 }
 
 async function shouldAppendDefaultConfigFileName(location: string): Promise<boolean> {

@@ -20,8 +20,8 @@ import {
 } from "./mockData";
 
 const GLOBAL_CONFIG_PATH = process.env.DOTFILER_GLOBAL_CONFIG_PATH as string;
-const NUMBER_OF_PROJECTS = 1;
-const NUMBER_OF_CONFIGS_PER_PROJECT = 6;
+const NUMBER_OF_PROJECTS = 10;
+const NUMBER_OF_CONFIGS_PER_PROJECT = 5;
 
 (async() => {
   await deleteTestData()
@@ -51,10 +51,11 @@ async function createTestData() {
     };
   });
 
-  // this is here so I can pass the location of the created project to the application through the cli
+  // @NOTE: this is here so I can pass the location of the created project to the application through the cli
   // see nodemon.json to see the command
   const localFile = `${process.cwd()}/.local-project-path`;
-  await writeFile(localFile, localConfigsAndLocations[0]?.location as string, 'utf8');
+  const paths = localConfigsAndLocations.map((lcl) => lcl.location).join(' ').toString();
+  await writeFile(localFile, paths as string, 'utf8');
 
   // first create the `.dotfiler` files inside each project (it also create the project directory)
   await createLocalConfigs(localConfigsAndLocations);
