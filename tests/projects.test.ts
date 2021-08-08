@@ -1,84 +1,166 @@
-import { dirname } from 'path';
+import { join, parse } from 'path';
 
 import projectHandler from '../src/project-handler';
-import { DEFAULT_GLOBAL_CONFIG_OBJECT } from '../src/definitions/constants';
 import { createLocalConfigObject } from './utils/mockData';
 import {
-  createEmptyLocalConfigFile,
+  clearFile,
+  createFileOrDirectoryFromPath,
+  createLocalConfigDirectory,
   createLocalConfigFile,
   createSourceFilesBasedOnLocalConfig,
   deleteDestFilesBasedOnLocalConfig,
+  deletePath,
   deleteSourceFilesBasedOnLocalConfig,
-  makeLocalConfigFileUnreadable,
+  makePathUnreadable,
+  readFileContent,
   removeLocalConfigDirectory,
+  writeContentToFile,
 } from './utils/fs';
-import { ILocalConfiguration } from '../src/definitions';
+import { DEFAULT_CONFIG_FILE_NAME, ILocalConfiguration } from '../src/definitions';
+import { jsonToYaml } from '../src/utils/contentTypeConverter';
 
-describe('project handler', () => {
-  let localConfigReference = { ...DEFAULT_GLOBAL_CONFIG_OBJECT.dotfiles[0] };
-  let configs: ILocalConfiguration;
+describe.only('Handling projects', () => {
+  let projectConfig: ILocalConfiguration;
+  const TEST_PROJECTS_HOME = '/tmp/dotfiler-projects';
+  const TEST_PROJECT_DIRECTORY = `${TEST_PROJECTS_HOME}/test-project`;
+  const TEST_PROJECT_DESTINATION_DIRECTORY = `${TEST_PROJECT_DIRECTORY}-dest`;
+  const TEST_PROJECT_CONFIG_FILE_PATH = join(TEST_PROJECT_DIRECTORY, DEFAULT_CONFIG_FILE_NAME);
+  const DEFAULT_PROJECT_HANDLER_ARGUMENT = { location: TEST_PROJECT_DIRECTORY, name: 'test-project' };
 
-  beforeEach(async () => {
-    configs = createLocalConfigObject(3, process.env.HOME);
-    await createLocalConfigFile(configs);
-    await createSourceFilesBasedOnLocalConfig({ ...configs, location: dirname(localConfigReference.location) });
-  });
+  // create a new project with some sample files and a config file inside
+  // also generate a destination directory for the files
+  async function setupTestProject(projectPath: string, numberOfFiles = 3, destinationPath?: string): Promise<void> {
+    await createLocalConfigDirectory(projectPath);
+    projectConfig = createLocalConfigObject(numberOfFiles, destinationPath, projectPath);
+    await createLocalConfigFile(projectConfig, projectPath);
+    await createSourceFilesBasedOnLocalConfig({ ...projectConfig, location: projectPath });
+  }
+
+  async function deleteTestProject(projectPath: string): Promise<void> {
+    await deleteSourceFilesBasedOnLocalConfig({ ...projectConfig, location: projectPath });
+    await deleteDestFilesBasedOnLocalConfig(projectConfig);
+    await removeLocalConfigDirectory(TEST_PROJECT_DIRECTORY);
+  }
 
   afterEach(async () => {
-    await deleteSourceFilesBasedOnLocalConfig({ ...configs, location: dirname(localConfigReference.location) });
-    await deleteDestFilesBasedOnLocalConfig(configs);
-    await removeLocalConfigDirectory();
+    await deleteTestProject(TEST_PROJECT_DIRECTORY);
   });
 
-  test('project location is empty', async () => {
-    const config = { ...localConfigReference, location: '' };
-    expect(() => projectHandler(config)).rejects.toThrow('empty');
+  describe('project directory', () => {
+    beforeEach(async () => {
+      await setupTestProject(TEST_PROJECT_DIRECTORY, 0, TEST_PROJECT_DESTINATION_DIRECTORY);
+    });
+
+    test('cannot access project directory: does not exist', async () => {
+      const config = { location: '/some/random/dir' };
+      expect(() => projectHandler(config)).rejects.toThrow('ENOENT');
+    });
+
+    test.skip('cannot access project directory: does not have permission', async () => {
+      await makePathUnreadable(TEST_PROJECT_DIRECTORY);
+      expect(() => projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).rejects.toThrow('EACCES');
+    });
   });
 
-  test('project location is an invalid path', async () => {
-    const config = { ...localConfigReference, location: '2' };
-    expect(() => projectHandler(config)).rejects.toThrow('ENOENT');
+  describe('project configuration file', () => {
+    beforeEach(async () => {
+      await setupTestProject(TEST_PROJECT_DIRECTORY, 1, TEST_PROJECT_DESTINATION_DIRECTORY);
+    });
+
+    test('cannot access project configuration file: does not exist', async () => {
+      await deletePath(TEST_PROJECT_CONFIG_FILE_PATH);
+      expect(() => projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).rejects.toThrow('ENOENT');
+    });
+
+    test.skip('cannot access project configuration file: does not have permission', async () => {
+      await makePathUnreadable(TEST_PROJECT_CONFIG_FILE_PATH);
+      expect(() => projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).rejects.toThrow('ENOENT');
+    });
+
+    test('cannot read project configuration file: is empty', async () => {
+      await clearFile(TEST_PROJECT_CONFIG_FILE_PATH)
+      expect(() => projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).rejects.toThrow('do not follow the correct config structure');
+    });
+
+    test('cannot read project configuration file: is neither json or yaml', async () => {
+      await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, 'this is not valid content');
+      expect(() => projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).rejects.toThrow('do not follow the correct config structure');
+    });
+
+    test('project configuration file has valid yaml', async () => {
+      const jsonprojectConfigtr = await readFileContent(TEST_PROJECT_CONFIG_FILE_PATH);
+      const yamlprojectConfigtr = await jsonToYaml(jsonprojectConfigtr);
+      await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, yamlprojectConfigtr);
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
+
+    test('project configuration file has valid json', async () => {
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
   });
 
-  test('project location does not exist', async () => {
-    const config = { ...localConfigReference, location: '/some/random/dir' };
-    expect(() => projectHandler(config)).rejects.toThrow('ENOENT');
-  });
+  describe('project source file', () => {
+    beforeEach(async () => {
+      await setupTestProject(TEST_PROJECT_DIRECTORY, 1, TEST_PROJECT_DESTINATION_DIRECTORY);
+    });
 
-  test('project location cannot be accessed by lack of permissions', async () => {
-    await makeLocalConfigFileUnreadable();
-    const config = { ...localConfigReference };
-    expect(() => projectHandler(config)).rejects.toThrow('EACCES');
-  });
+    test('cannot read source file: does not exist', async () => {
+      const sourceFilePath = join(TEST_PROJECT_DIRECTORY, projectConfig.configs[0]?.src as string);
+      await deletePath(sourceFilePath);
+      const result = await projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT);
+      expect(result[0]).toHaveProperty('status', 'failed');
+    });
 
-  test('the project configuration is not json', async () => {
-    await createEmptyLocalConfigFile();
-    const config = { ...localConfigReference };
-    expect(() => projectHandler(config)).rejects.toThrow('JSON');
-  });
+    test.skip('cannot read source file: does not have permission', async () => {
+      const sourceFilePath = join(TEST_PROJECT_DIRECTORY, projectConfig.configs[0]?.src as string);
+      await makePathUnreadable(sourceFilePath);
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
 
-  // test('the configuration does not follow the correct structure', async () => {
-  //   await createLocalConfigFile({ thisisnotgoingtowork: true });
-  //   const config = { ...localConfigReference };
-  //   expect(() => projectHandler(config)).rejects.toThrow('array');
-  // });
+    test.only.each([
+      { type: 'link', copy: false },
+      { type: 'copy', copy: true },
+    ])('cannot $type source file to destination: $type is already present', async ({ copy }) => {
+      const projectConfig = JSON.parse(await readFileContent(TEST_PROJECT_CONFIG_FILE_PATH));
 
-  test('the configuration is correct', async () => {
-    const config = { ...localConfigReference };
-    expect(projectHandler(config)).resolves.toBeDefined();
-  });
+      // create a file in the destination
+      await createFileOrDirectoryFromPath(projectConfig.configs[0].dest);
 
-  test.only('will not overwrite if the target location already exist', async () => {
-    const config = { ...localConfigReference };
-    const results = await projectHandler(config);
-    expect(results.every(r => r.status == 'created')).toBeTruthy();
-    console.log(results);
+      // update project's config
+      projectConfig.configs[0].copy = copy;
+      await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, JSON.stringify(projectConfig));
 
-    console.log('aaaaa krl');
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
 
-    // run a second time to try to overwrite
-    const results2 = await projectHandler(config);
-    console.log(results2);
-    expect(results2.every(r => r.status == 'present')).toBeTruthy();
+    test.skip.each([
+      { type: 'link', copy: false },
+      { type: 'copy', copy: true },
+    ])('cannot $type source file to destination: does not have permission', async ({ copy }) => {
+      const projectConfig = JSON.parse(await readFileContent(TEST_PROJECT_CONFIG_FILE_PATH));
+
+      // make destination's parent dir unreadable
+      const destinationParentDir = parse(projectConfig.configs[0].dest).dir;
+      await makePathUnreadable(destinationParentDir);
+
+      // update project's config
+      projectConfig.configs[0].copy = copy;
+      await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, JSON.stringify(projectConfig));
+
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
+
+    test.each([
+      { type: 'link', copy: false },
+      { type: 'copy', copy: true }
+    ])('$type source file: $type is successful', async ({ copy }) => {
+      const projectConfig = JSON.parse(await readFileContent(TEST_PROJECT_CONFIG_FILE_PATH));
+
+      // update project's config
+      projectConfig.configs[0].copy = copy;
+      await writeContentToFile(TEST_PROJECT_CONFIG_FILE_PATH, JSON.stringify(projectConfig));
+
+      expect(projectHandler(DEFAULT_PROJECT_HANDLER_ARGUMENT)).resolves.toBeDefined();
+    });
   });
 });
