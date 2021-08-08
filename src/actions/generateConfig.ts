@@ -1,11 +1,23 @@
 import { join, resolve } from "path";
 import { DEFAULT_CONFIG_FILE_NAME } from "../definitions";
-import { getContentsFromDirectory, writeConfigToFile } from "../utils/fs";
+import { jsonToYaml } from "../utils/contentTypeConverter";
+import { doesTargetExist, getContentsFromDirectory, writeConfigToFile } from "../utils/fs";
 
-export default async function generateConfig(path: string): Promise<string> {
-  const contents = await getContentsFromDirectory(path);
-  const configs = contents.map((item) => ({ src: item, dest: resolve(path, '..') }));
+export default async function generateConfig(path: string, asYaml?: boolean): Promise<string> {
+  if (await doesTargetExist(join(path, DEFAULT_CONFIG_FILE_NAME))) {
+    throw new Error(`There's a file named '.dotfiler' in this directory (${path})`);
+  }
+
   const configFilePath = join(path, DEFAULT_CONFIG_FILE_NAME);
-  await writeConfigToFile(configFilePath, { configs });
+  const contents = await getContentsFromDirectory(path);
+  let projectConfig = JSON.stringify({
+    configs: contents.map((item) => ({ src: item, dest: join(resolve(path, '..'), item) })),
+  }, null, 2);
+
+  if (asYaml) {
+    projectConfig = await jsonToYaml(projectConfig);
+  }
+
+  await writeConfigToFile(configFilePath, projectConfig);
   return configFilePath;
 }

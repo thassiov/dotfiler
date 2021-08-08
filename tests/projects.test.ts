@@ -19,7 +19,7 @@ import {
 import { DEFAULT_CONFIG_FILE_NAME, ILocalConfiguration } from '../src/definitions';
 import { jsonToYaml } from '../src/utils/contentTypeConverter';
 
-describe.only('Handling projects', () => {
+describe('Handling projects', () => {
   let projectConfig: ILocalConfiguration;
   const TEST_PROJECTS_HOME = '/tmp/dotfiler-projects';
   const TEST_PROJECT_DIRECTORY = `${TEST_PROJECTS_HOME}/test-project`;
