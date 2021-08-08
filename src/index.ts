@@ -27,7 +27,6 @@ import chalk from 'chalk';
         console.error('(☞ﾟヮﾟ)☞ ┻━┻');
         break;
     }
-    // await actions[action as keyof Actions](parameter as a);
   } catch (err) {
     logger.error(err);
     logger.error('Exiting...');

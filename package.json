@@ -15,7 +15,7 @@
     "compile": "tsc --project ./tsconfig.production.json",
     "bundle": "esbuild dist/index.js --bundle --minify --platform=node --outfile=dist/bundle.js",
     "package": "pkg ./dist/bundle.js --targets node12-linux-x64 --output ./dist/dotfiler",
-    "build": "npm run compile && npm run bundle && npm run package",
+    "build": "npm run compile && npm run bundle",
     "find-dead-code": "ts-prune"
   },
   "repository": {
