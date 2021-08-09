@@ -6,6 +6,9 @@
   "files": [
     "./dist/dotfiler.js"
   ],
+  "engines": {
+    "node":">=10"
+  },
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
@@ -13,7 +16,7 @@
     "test": "jest --runInBand",
     "test:watch": "npm run test -- --watchAll",
     "compile": "tsc --project ./tsconfig.production.json",
-    "bundle": "esbuild dist/index.js --bundle --minify --platform=node --target=node8 --outfile=dist/dotfiler.js",
+    "bundle": "esbuild dist/index.js --bundle --minify --platform=node --target=node10 --outfile=dist/dotfiler.js",
     "package": "pkg ./dist/bundle.js --targets node12-linux-x64 --output ./dist/dotfiler",
     "build": "npm run compile && npm run bundle",
     "find-dead-code": "ts-prune",

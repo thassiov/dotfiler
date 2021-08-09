@@ -1,6 +1,5 @@
 import faker from 'faker';
-import { parse, resolve, join } from 'path';
-import {normalize} from 'path/posix';
+import { parse, resolve, join, normalize } from 'path';
 import { IGlobalConfiguration, ILocalConfiguration } from '../../src/definitions';
 import { DEFAULT_LOCAL_CONFIG_DIRECTORY_PATH } from '../../src/definitions/constants';
 
