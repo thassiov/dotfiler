@@ -11,7 +11,11 @@ import fsExtra from 'fs-extra';
 import logger from './logger';
 
 import { ILocalConfigurationItem } from '../definitions/ILocalConfiguration';
-import { readdir, writeFile } from 'fs/promises';
+import { readdir as readdirCb, writeFile as writeFileCb } from 'fs';
+import { promisify } from 'util';
+
+const readdir = promisify(readdirCb);
+const writeFile = promisify(writeFileCb);
 
 async function isPathOfType(path: string, type: string): Promise<boolean> {
   if (!path) {

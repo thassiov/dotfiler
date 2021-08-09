@@ -2,7 +2,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { ensureDir, remove } from "fs-extra";
-import { writeFile } from 'fs/promises';
+import { writeFile as writeFileCb } from 'fs/promises';
+
+import { promisify } from 'util';
+
+const writeFile = promisify(writeFileCb);
+
 import {join} from 'path';
 
 import {

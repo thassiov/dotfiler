@@ -1,11 +1,11 @@
 {
   "name": "dotfiler",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "everything in the right place",
-  "main": "./src/index.ts",
-  "bin": {
-    "dotfiler": "./dist/bundle.js"
-  },
+  "bin": "./dist/dotfiler.js",
+  "files": [
+    "./dist/dotfiler.js"
+  ],
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon",
@@ -13,10 +13,11 @@
     "test": "jest --runInBand",
     "test:watch": "npm run test -- --watchAll",
     "compile": "tsc --project ./tsconfig.production.json",
-    "bundle": "esbuild dist/index.js --bundle --minify --platform=node --outfile=dist/bundle.js",
+    "bundle": "esbuild dist/index.js --bundle --minify --platform=node --target=node8 --outfile=dist/dotfiler.js",
     "package": "pkg ./dist/bundle.js --targets node12-linux-x64 --output ./dist/dotfiler",
     "build": "npm run compile && npm run bundle",
-    "find-dead-code": "ts-prune"
+    "find-dead-code": "ts-prune",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",

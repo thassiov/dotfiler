@@ -1,7 +1,12 @@
 import {
-  chmod,
-  readFile ,
-} from 'fs/promises';
+  chmod as chmodCb,
+  readFile as readFileCb,
+} from 'fs';
+
+import { promisify } from 'util';
+
+const chmod = promisify(chmodCb);
+const readFile = promisify(readFileCb);
 
 import { join } from 'path';
 
